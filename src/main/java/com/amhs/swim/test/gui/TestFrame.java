@@ -31,30 +31,72 @@ public class TestFrame extends JFrame {
     private void initComponents() {
         JPanel mainPanel = new JPanel(new BorderLayout());
         
-        // Panel chứa các nút test
-        JPanel buttonPanel = new JPanel(new GridLayout(0, 2, 5, 5));
-        buttonPanel.setBorder(BorderFactory.createTitledBorder("Test Cases"));
+        JTabbedPane tabbedPane = new JTabbedPane();
         
-        // Thêm nút cho các test case AMHS -> SWIM
-        addTestButton(buttonPanel, "CTSW001 (IPM to AMQP)", () -> runTest(amhsToSwimTests.CTSW001));
-        addTestButton(buttonPanel, "CTSW004 (NDR Syntax Error)", () -> runTest(amhsToSwimTests.CTSW004));
-        addTestButton(buttonPanel, "CTSW006 (Max Size)", () -> runTest(amhsToSwimTests.CTSW006));
-        // ... Thêm các nút khác tương ứng với danh sách test case
+        // --- Tab: AMHS to SWIM ---
+        JPanel amhsToSwimPanel = new JPanel(new BorderLayout());
+        JPanel amhsButtons = new JPanel(new GridLayout(0, 2, 5, 5));
         
-        // Thêm nút cho các test case SWIM -> AMHS
-        addTestButton(buttonPanel, "CTSW101 (AMQP to AMHS)", () -> runTest(swimToAmhsTests.CTSW101));
-        addTestButton(buttonPanel, "CTSW110 (Invalid Content-Type)", () -> runTest(swimToAmhsTests.CTSW110));
-        addTestButton(buttonPanel, "CTSW112 (Max Recipients)", () -> runTest(swimToAmhsTests.CTSW112));
+        addTestButton(amhsButtons, "CTSW001 (IPM to AMQP)", () -> runTest(amhsToSwimTests.CTSW001));
+        addTestButton(amhsButtons, "CTSW002 (Multi Recipients)", () -> runTest(amhsToSwimTests.CTSW002));
+        addTestButton(amhsButtons, "CTSW003 (DR Success)", () -> runTest(amhsToSwimTests.CTSW003));
+        addTestButton(amhsButtons, "CTSW004 (NDR Syntax Error)", () -> runTest(amhsToSwimTests.CTSW004));
+        addTestButton(amhsButtons, "CTSW005 (DR Exceed)", () -> runTest(amhsToSwimTests.CTSW005));
+        addTestButton(amhsButtons, "CTSW006 (Max Size)", () -> runTest(amhsToSwimTests.CTSW006));
+        addTestButton(amhsButtons, "CTSW007 (Multi Body Part)", () -> runTest(amhsToSwimTests.CTSW007));
+        addTestButton(amhsButtons, "CTSW008 (Unsupported Type)", () -> runTest(amhsToSwimTests.CTSW008));
+        addTestButton(amhsButtons, "CTSW009 (Optional Fields)", () -> runTest(amhsToSwimTests.CTSW009));
+        addTestButton(amhsButtons, "CTSW010 (Excessive Recip)", () -> runTest(amhsToSwimTests.CTSW010));
+        addTestButton(amhsButtons, "CTSW011 (Probe to AMQP)", () -> runTest(amhsToSwimTests.CTSW011));
+        addTestButton(amhsButtons, "CTSW012 (Probe Resp OK)", () -> runTest(amhsToSwimTests.CTSW012));
+        addTestButton(amhsButtons, "CTSW013 (Probe Resp Fail)", () -> runTest(amhsToSwimTests.CTSW013));
+        addTestButton(amhsButtons, "CTSW014 (RN to AMQP)", () -> runTest(amhsToSwimTests.CTSW014));
+        addTestButton(amhsButtons, "CTSW015 (RN Request)", () -> runTest(amhsToSwimTests.CTSW015));
+        addTestButton(amhsButtons, "CTSW016 (Current EIT)", () -> runTest(amhsToSwimTests.CTSW016));
+        addTestButton(amhsButtons, "CTSW017 (IA5 Body Part)", () -> runTest(amhsToSwimTests.CTSW017));
+        addTestButton(amhsButtons, "CTSW018 (ISO 646)", () -> runTest(amhsToSwimTests.CTSW018));
+        addTestButton(amhsButtons, "CTSW019 (Non-ISO 646)", () -> runTest(amhsToSwimTests.CTSW019));
+        addTestButton(amhsButtons, "CTSW020 (SEC Envelope)", () -> runTest(amhsToSwimTests.CTSW020));
         
-        // Area hiển thị log
+        JScrollPane amhsScroll = new JScrollPane(amhsButtons);
+        amhsToSwimPanel.add(amhsScroll, BorderLayout.CENTER);
+        tabbedPane.addTab("AMHS to SWIM (20)", amhsToSwimPanel);
+        
+        // --- Tab: SWIM to AMHS ---
+        JPanel swimToAmhsPanel = new JPanel(new BorderLayout());
+        JPanel swimButtons = new JPanel(new GridLayout(0, 2, 5, 5));
+        
+        addTestButton(swimButtons, "CTSW101 (AMQP to AMHS)", () -> runTest(swimToAmhsTests.CTSW101));
+        addTestButton(swimButtons, "CTSW102 (Missing Info)", () -> runTest(swimToAmhsTests.CTSW102));
+        addTestButton(swimButtons, "CTSW103 (Explicit Pri)", () -> runTest(swimToAmhsTests.CTSW103));
+        addTestButton(swimButtons, "CTSW104 (Multi Recip)", () -> runTest(swimToAmhsTests.CTSW104));
+        addTestButton(swimButtons, "CTSW105 (Filing Time)", () -> runTest(swimToAmhsTests.CTSW105));
+        addTestButton(swimButtons, "CTSW106 (Message ID)", () -> runTest(swimToAmhsTests.CTSW106));
+        addTestButton(swimButtons, "CTSW107 (Originator)", () -> runTest(swimToAmhsTests.CTSW107));
+        addTestButton(swimButtons, "CTSW108 (Subject)", () -> runTest(swimToAmhsTests.CTSW108));
+        addTestButton(swimButtons, "CTSW109 (Optional Prop)", () -> runTest(swimToAmhsTests.CTSW109));
+        addTestButton(swimButtons, "CTSW110 (Invalid Type)", () -> runTest(swimToAmhsTests.CTSW110));
+        addTestButton(swimButtons, "CTSW111 (Max Payload)", () -> runTest(swimToAmhsTests.CTSW111));
+        addTestButton(swimButtons, "CTSW112 (Max Recipients)", () -> runTest(swimToAmhsTests.CTSW112));
+        addTestButton(swimButtons, "CTSW113 (DR to AMHS)", () -> runTest(swimToAmhsTests.CTSW113));
+        addTestButton(swimButtons, "CTSW114 (NDR to AMHS)", () -> runTest(swimToAmhsTests.CTSW114));
+        addTestButton(swimButtons, "CTSW115 (Body Part Typ)", () -> runTest(swimToAmhsTests.CTSW115));
+        addTestButton(swimButtons, "CTSW116 (FTBP Binary)", () -> runTest(swimToAmhsTests.CTSW116));
+        
+        JScrollPane swimScroll = new JScrollPane(swimButtons);
+        swimToAmhsPanel.add(swimScroll, BorderLayout.CENTER);
+        tabbedPane.addTab("SWIM to AMHS (16)", swimToAmhsPanel);
+        
+        // --- Execution Log ---
         logArea = new JTextArea();
         logArea.setEditable(false);
         logArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
-        JScrollPane scrollPane = new JScrollPane(logArea);
-        scrollPane.setBorder(BorderFactory.createTitledBorder("Execution Log"));
+        JScrollPane logScroll = new JScrollPane(logArea);
+        logScroll.setBorder(BorderFactory.createTitledBorder("Execution Log"));
+        logScroll.setPreferredSize(new Dimension(800, 200));
         
-        mainPanel.add(buttonPanel, BorderLayout.NORTH);
-        mainPanel.add(scrollPane, BorderLayout.CENTER);
+        mainPanel.add(tabbedPane, BorderLayout.CENTER);
+        mainPanel.add(logScroll, BorderLayout.SOUTH);
         
         add(mainPanel);
     }

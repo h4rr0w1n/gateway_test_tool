@@ -107,6 +107,72 @@ public class AmhsDriver {
         throw new java.util.concurrent.TimeoutException("Timeout waiting for message.");
     }
 
+    public String receiveDR() throws Exception {
+        return receiveMessage();
+    }
+
+    public void sendMessageWithMultipleRecipients(String originator, String[] recipients, String subject, String content, String priority) throws Exception {
+        for (String rec : recipients) {
+            sendMessage(originator, rec, subject, content, priority);
+        }
+    }
+
+    public void sendMessageWithOptionalFields(String originator, String recipient, String subject, String content, String priority) throws Exception {
+        sendMessage(originator, recipient, subject, content, priority);
+    }
+
+    public void sendSignedMessage(String originator, String recipient, String subject, String content, String priority) throws Exception {
+        sendMessage(originator, recipient, subject, content, priority);
+    }
+
+    public void sendMessageWithExpiredDeliveryTime(String originator, String recipient, String subject, String content, String priority) throws Exception {
+        sendMessage(originator, recipient, subject, content, priority);
+    }
+
+    public void sendMessageWithMultipleBodyParts(String originator, String recipient, String subject, String content, String priority) throws Exception {
+        sendMessage(originator, recipient, subject, content, priority);
+    }
+
+    public void sendMessageWithUnsupportedContentType(String originator, String recipient, String subject, String content, String priority, String contentType) throws Exception {
+        sendMessage(originator, recipient, subject, content, priority);
+    }
+
+    public void sendMessageWithEIT(String originator, String recipient, String subject, String content, String priority, String eit) throws Exception {
+        sendMessage(originator, recipient, subject, content, priority);
+    }
+
+    public void sendMessageWithBodyPartType(String originator, String recipient, String subject, String content, String priority, String bodyPart) throws Exception {
+        sendMessage(originator, recipient, subject, content, priority);
+    }
+
+    public void sendProbe(String originator, String recipient, String subject) throws Exception {
+        sendMessage(originator, recipient, subject, "PROBE", "FF");
+    }
+
+    public String receiveProbeResponse() throws Exception {
+        return receiveMessage();
+    }
+
+    public void sendInvalidProbe(String originator, String recipient, String subject) throws Exception {
+        sendMessage(originator, recipient, subject, "INVALID_PROBE", "FF");
+    }
+
+    public String receiveProbeNegativeResponse() throws Exception {
+        return receiveMessage();
+    }
+
+    public void sendReceiptNotification(String originator, String recipient, String subject, String content) throws Exception {
+        sendMessage(originator, recipient, subject, content, "FF");
+    }
+
+    public void sendMessageWithRNRequest(String originator, String recipient, String subject, String content, String priority) throws Exception {
+        sendMessage(originator, recipient, subject, content, priority);
+    }
+
+    public String receiveRN() throws Exception {
+        return receiveMessage();
+    }
+
     // --- JNI Native Methods (Giả lập) ---
     private native long nativeOpenSession(String channel);
     private native long nativeMsgNew();
