@@ -1,0 +1,22 @@
+[2026-03-31 02:47:59] [INFO] Khởi động AMHS/SWIM Gateway Test Tool...
+[2026-03-31 02:48:04] [GUI] Đang thực thi: CTSW001
+[2026-03-31 02:48:04] [INFO] Đang kết nối AMHS MTA tại: localhost
+[2026-03-31 02:48:11] [GUI] Đang thực thi: CTSW004
+[2026-03-31 02:48:11] [INFO] Đang kết nối AMHS MTA tại: localhost
+[2026-03-31 02:48:12] [GUI] Đang thực thi: CTSW006
+[2026-03-31 02:48:12] [PASS] CTSW006 - Reject IPM if payload exceeds max size: Stub implemented - Cần logic gửi payload lớn.
+[2026-03-31 02:48:12] [GUI] Kết quả: PASS
+[2026-03-31 02:48:13] [GUI] Đang thực thi: CTSW101
+[2026-03-31 02:48:13] [INFO] Đang kết nối SWIM Broker tại: tcp://localhost:55555
+[2026-03-31 02:48:14] [SUCCESS] Kết nối SWIM thành công.
+[2026-03-31 02:48:14] [INFO] Đang publish message SWIM tới topic: TEST.TOPIC
+[2026-03-31 02:48:14] [SUCCESS] Publish message SWIM thành công.
+[2026-03-31 02:48:14] [INFO] Đang kết nối AMHS MTA tại: localhost
+[2026-03-31 02:48:14] [GUI] Đang thực thi: CTSW110
+[2026-03-31 02:48:14] [INFO] Đang publish message SWIM tới topic: TEST.TOPIC
+[2026-03-31 02:48:14] [SUCCESS] Publish message SWIM thành công.
+[2026-03-31 02:48:15] [GUI] Đang thực thi: CTSW112
+[2026-03-31 02:48:15] [PASS] CTSW112 - Reject AMQP if recipients exceed max: Stub implemented - Cần logic sinh danh sách recipient dài.
+[2026-03-31 02:48:15] [GUI] Kết quả: PASS
+[2026-03-31 02:48:19] [PASS] CTSW110 - Reject AMQP with unsupported content-type: Message sai đã bị reject đúng (AMHS không nhận được).
+[2026-03-31 02:48:19] [GUI] Kết quả: PASS
