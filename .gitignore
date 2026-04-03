@@ -1,55 +1,51 @@
 ```
-# Compiled and build artifacts
-*.class
-*.o
-*.obj
-*.out
-build/
+# Dependencies
 target/
 
-# Dependencies
-.gradle/
-lib/
-libs/
+# Compiled files
+*.class
+*.jar
+*.war
+*.ear
 
-# Logs and temp files
+# IDE files
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Logs
 *.log
-*.tmp
-*.swp
 
 # Environment
 .env
 .env.local
 *.env.*
 
-# Editors
-.vscode/
-.idea/
-*.swp
-*.swo
+# OS files
+.DS_Store
+Thumbs.db
 
-# Coverage
-coverage/
-htmlcov/
-.coverage
+# Build artifacts
+build/
+dist/
+out/
 
-# Python specific (if applicable)
+# Python (if any Python files exist in project)
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
-.Python
-*.so
-*.egg-info/
-.eggs/
+.venv/
+venv/
 
-# Java specific
-*.jar
-*.war
-*.ear
-hs_err_pid*
+# Coverage reports
+coverage/
+htmlcov/
+.coverage
 
-# System files
-.DS_Store
-Thumbs.db
+# Temporary files
+*.tmp
+*.temp
+*.bak
 ```
