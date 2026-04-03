@@ -18,16 +18,14 @@
         <!-- Solace JCSMP API (proprietary - optional, dùng cho legacy deployments) -->
         <!-- Nếu có trong classpath, sẽ được ưu tiên sử dụng thay vì Qpid -->
         <dependency>
-            <groupId>com.solace.api</groupId>
+            <groupId>com.solacesystems</groupId>
             <artifactId>sol-common</artifactId>
             <version>10.20.0</version>
-            <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>com.solace.api</groupId>
+            <groupId>com.solacesystems</groupId>
             <artifactId>sol-jcsmp</artifactId>
             <version>10.20.0</version>
-            <optional>true</optional>
         </dependency>
         
         <!-- Isode X.400 API (proprietary - cần cung cấp manually) -->

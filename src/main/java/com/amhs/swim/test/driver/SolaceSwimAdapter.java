@@ -2,23 +2,8 @@ package com.amhs.swim.test.driver;
 
 import com.amhs.swim.test.config.TestConfig;
 import com.amhs.swim.test.util.Logger;
-import com.solace.api.jms.*;
-import com.solace.client.SolSession;
-import com.solace.client.XMLMessageProducer;
-import com.solace.client.MessageConsumer;
-import com.solace.client.JCSMPFactory;
-import com.solace.client.JCSMPProperties;
-import com.solace.client.JCSMPSession;
-import com.solace.system.SolaceVersion;
+import com.solacesystems.jcsmp.*;
 
-import javax.jms.BytesMessage;
-import javax.jms.Destination;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -29,10 +14,10 @@ public class SolaceSwimAdapter implements SwimMessagingAdapter {
     
     private JCSMPSession session;
     private XMLMessageProducer producer;
-    private MessageConsumer consumer;
+    private XMLMessageConsumer consumer;
     private boolean isConnected = false;
     
-    private static final String SOLACE_JCSMP_CLASS = "com.solace.client.JCSMPSession";
+    private static final String SOLACE_JCSMP_CLASS = "com.solacesystems.jcsmp.JCSMPSession";
     
     @Override
     public boolean isAvailable() {
@@ -58,8 +43,8 @@ public class SolaceSwimAdapter implements SwimMessagingAdapter {
         
         TestConfig config = TestConfig.getInstance();
         String host = config.getProperty("swim.broker.host");
-        String port = config.getProperty("swim.broker.port", "5672");
-        String user = config.getProperty("swim.broker.user", "default");
+        String port = config.getProperty("swim.broker.port", "55555");
+        String user = config.getProperty("swim.broker.username", "default");
         String pass = config.getProperty("swim.broker.password", "default");
         String vpn = config.getProperty("solace.vpn", "default");
         
@@ -68,7 +53,7 @@ public class SolaceSwimAdapter implements SwimMessagingAdapter {
         // Create Solace properties
         JCSMPProperties properties = new JCSMPProperties();
         properties.setProperty(JCSMPProperties.HOST, host + ":" + port);
-        properties.setProperty(JCSMPProperties.USERNAME_USERNAME, user);
+        properties.setProperty(JCSMPProperties.USERNAME, user);
         properties.setProperty(JCSMPProperties.PASSWORD, pass);
         properties.setProperty(JCSMPProperties.VPN_NAME, vpn);
         
@@ -77,7 +62,14 @@ public class SolaceSwimAdapter implements SwimMessagingAdapter {
         session.connect();
         
         // Create producer
-        producer = JCSMPFactory.onlyInstance().createMessageProducer(session, null);
+        producer = session.getMessageProducer(new JCSMPStreamingPublishEventHandler() {
+            @Override
+            public void responseReceived(String messageID) {}
+            @Override
+            public void handleError(String messageID, JCSMPException e, long timestamp) {
+                Logger.log("ERROR", "Solace Publish Error: " + e.getMessage());
+            }
+        });
         
         isConnected = true;
         Logger.log("SUCCESS", "Solace JCSMP connection established.");
@@ -91,40 +83,38 @@ public class SolaceSwimAdapter implements SwimMessagingAdapter {
         
         Logger.log("INFO", "Publishing message via Solace JCSMP to: " + topic);
         
-        // Create text or bytes message based on content
-        Message msg;
-        String contentType = (String) properties.get("amhs_content_type");
+        // Create message
+        XMLMessage msg;
+        String bodyPartType = (String) properties.get("amhs_bodypart_type");
         
-        if (contentType != null && (contentType.contains("text") || contentType.contains("ia5"))) {
+        if (bodyPartType != null && (bodyPartType.contains("text") || bodyPartType.contains("ia5"))) {
             TextMessage textMsg = JCSMPFactory.onlyInstance().createMessage(TextMessage.class);
             textMsg.setText(new String(payload));
             msg = textMsg;
         } else {
             BytesMessage bytesMsg = JCSMPFactory.onlyInstance().createMessage(BytesMessage.class);
-            bytesMsg.writeBytes(payload);
+            bytesMsg.setData(payload);
             msg = bytesMsg;
         }
         
-        // Set Solace-specific properties (mapped from AMHS properties)
+        // Set User Properties
+        SDTMap userProps = JCSMPFactory.onlyInstance().createMap();
+        for (Map.Entry<String, Object> entry : properties.entrySet()) {
+            String key = entry.getKey();
+            if (key.startsWith("amhs_")) {
+                userProps.putString(key, String.valueOf(entry.getValue()));
+            }
+        }
+        msg.setProperties(userProps);
+        
+        // Set Priority (0-9)
         if (properties.containsKey("amhs_ats_pri")) {
-            msg.setIntProperty("JMSXDeliveryCount", mapAmhsPriorityToInt((String) properties.get("amhs_ats_pri")));
-        }
-        if (properties.containsKey("amhs_message_id")) {
-            msg.setJMSMessageID((String) properties.get("amhs_message_id"));
-        }
-        if (properties.containsKey("amhs_subject")) {
-            msg.setStringProperty("amhs_subject", (String) properties.get("amhs_subject"));
-        }
-        if (properties.containsKey("amhs_originator")) {
-            msg.setStringProperty("amhs_originator", (String) properties.get("amhs_originator"));
-        }
-        if (properties.containsKey("amhs_recipients")) {
-            msg.setStringProperty("amhs_recipients", (String) properties.get("amhs_recipients"));
+            msg.setPriority(mapAmhsPriorityToInt((String) properties.get("amhs_ats_pri")));
         }
         
         // Send message
-        Destination dest = JCSMPFactory.onlyInstance().createTopic(topic);
-        producer.send(msg, dest);
+        Topic solaceTopic = JCSMPFactory.onlyInstance().createTopic(topic);
+        producer.send(msg, solaceTopic);
         
         Logger.log("SUCCESS", "Message published via Solace JCSMP.");
     }
@@ -137,24 +127,32 @@ public class SolaceSwimAdapter implements SwimMessagingAdapter {
         
         Logger.log("INFO", "Consuming message via Solace JCSMP from: " + address);
         
-        // Create consumer
-        consumer = JCSMPFactory.onlyInstance().createMessageConsumer(session, 
-            JCSMPFactory.onlyInstance().createTopic(address), null, null);
+        Topic solaceTopic = JCSMPFactory.onlyInstance().createTopic(address);
+        consumer = session.getMessageConsumer(new XMLMessageListener() {
+            @Override
+            public void onReceive(BytesXMLMessage msg) {}
+            @Override
+            public void onException(JCSMPException e) {
+                Logger.log("ERROR", "Solace Consumer Error: " + e.getMessage());
+            }
+        });
+        
+        session.addSubscription(solaceTopic);
         consumer.start();
         
-        // Receive message with timeout
-        Message msg = consumer.receive(timeoutMs);
+        BytesXMLMessage rxMsg = consumer.receive((int)timeoutMs);
         
-        if (msg != null) {
+        if (rxMsg != null) {
             Logger.log("SUCCESS", "Message received via Solace JCSMP.");
             
-            if (msg instanceof TextMessage) {
-                return ((TextMessage) msg).getText().getBytes();
-            } else if (msg instanceof BytesMessage) {
-                BytesMessage bytesMsg = (BytesMessage) msg;
-                byte[] data = new byte[(int) bytesMsg.getBodyLength()];
-                bytesMsg.readBytes(data);
-                return data;
+            if (rxMsg instanceof TextMessage) {
+                return ((TextMessage) rxMsg).getText().getBytes();
+            } else if (rxMsg instanceof BytesMessage) {
+                return ((BytesMessage) rxMsg).getData();
+            } else {
+                byte[] attachment = new byte[rxMsg.getAttachmentContentLength()];
+                rxMsg.readAttachmentBytes(attachment);
+                return attachment;
             }
         }
         
@@ -164,33 +162,22 @@ public class SolaceSwimAdapter implements SwimMessagingAdapter {
     @Override
     public void close() {
         Logger.log("INFO", "Closing Solace JCSMP connection...");
-        
-        if (consumer != null) {
-            consumer.close();
-        }
-        if (producer != null) {
-            producer.close();
-        }
-        if (session != null) {
-            session.closeSession();
-        }
-        
+        if (consumer != null) consumer.close();
+        if (producer != null) producer.close();
+        if (session != null) session.closeSession();
         isConnected = false;
         Logger.log("SUCCESS", "Solace JCSMP connection closed.");
     }
     
-    /**
-     * Map AMHS priority to integer for Solace.
-     */
     private int mapAmhsPriorityToInt(String amhsPriority) {
-        if (amhsPriority == null) return 0;
+        if (amhsPriority == null) return 4;
         switch (amhsPriority.toUpperCase()) {
-            case "SS": return 6;
-            case "DD": return 4;
-            case "FF": return 2;
-            case "GG": return 1;
+            case "SS": return 9;
+            case "DD": return 7;
+            case "FF": return 4;
+            case "GG": return 2;
             case "KK": return 0;
-            default: return 0;
+            default: return 4;
         }
     }
 }

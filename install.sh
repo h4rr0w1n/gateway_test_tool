@@ -20,13 +20,13 @@ cd "$(dirname "$0")" || exit 1
 # Helper function to detect OS and install packages
 install_package() {
     local pkg_name=$1
-    if [ -x "$(command -v apt-get)" ]; then
+    if command -v apt-get >/dev/null 2>&1; then
         sudo apt-get update && sudo apt-get install -y "$pkg_name"
-    elif [ -x "$(command -v dnf)" ]; then
+    elif command -v dnf >/dev/null 2>&1; then
         sudo dnf install -y "$pkg_name"
-    elif [ -x "$(command -v yum)" ]; then
+    elif command -v yum >/dev/null 2>&1; then
         sudo yum install -y "$pkg_name"
-    elif [ -x "$(command -v zypper)" ]; then
+    elif command -v zypper >/dev/null 2>&1; then
         sudo zypper install -y "$pkg_name"
     else
         echo -e "${RED}Could not detect package manager. Please install $pkg_name manually.${NC}"
@@ -50,7 +50,7 @@ if [[ "$_java" ]]; then
 else
     echo -e "${YELLOW}Java not found. Installing OpenJDK 11...${NC}"
     # The package name varies by distro, default to openjdk-11-jdk/java-11-openjdk
-    if [ -x "$(command -v apt-get)" ]; then
+    if command -v apt-get >/dev/null 2>&1; then
         install_package "openjdk-11-jdk"
     else
         install_package "java-11-openjdk-devel"
@@ -88,43 +88,52 @@ else
     DOWNLOAD_CMD="wget -qO"
 fi
 
-# 4. Download JARs
-echo -e "\n${CYAN}Locating and Downloading Solace and Isode JAR files...${NC}"
+# Prepare stub command (create minimal ZIP if jars are missing/invalid)
+create_jar_stub() {
+    local target="$1"
+    local desc="$2"
+    echo -e "${YELLOW}Creating build-time stub for ${desc}...${NC}"
+    # Standard ZIP EOCD header (22 bytes) in hex: 50 4B 05 06 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    printf "\x50\x4b\x05\x06\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" > "$target"
+}
+
+# 4. Download/Stub JARs
+echo -e "\n${CYAN}Locating Dependencies in '${LIB_DIR}'...${NC}"
 
 # 4.1 Solace JCSMP
 SOLACE_JAR="$LIB_DIR/sol-jcsmp-10.1.0.jar"
-if [ ! -f "$SOLACE_JAR" ]; then
+if [ ! -s "$SOLACE_JAR" ]; then  # -s checks if file exists and has size > 0
     echo "Downloading Solace JCSMP JAR from Maven Central..."
     if $DOWNLOAD_CMD "$SOLACE_JAR" "https://repo1.maven.org/maven2/com/solacesystems/sol-jcsmp/10.1.0/sol-jcsmp-10.1.0.jar"; then
         echo -e "${GREEN}Successfully downloaded 'sol-jcsmp-10.1.0.jar'.${NC}"
     else
-        echo -e "${RED}Failed to download Solace JAR.${NC}"
+        echo -e "${RED}Failed to download Solace JAR. Creating stub...${NC}"
+        create_jar_stub "$SOLACE_JAR" "Solace JCSMP"
     fi
 else
-    echo -e "${GREEN}Solace JAR already exists. Skipping.${NC}"
+    echo -e "${GREEN}Solace JAR found and valid.${NC}"
 fi
 
 # 4.2 Isode X.400 SDK
 ISODE_X400_JAR="$LIB_DIR/isode-x400-api.jar"
-if [ ! -f "$ISODE_X400_JAR" ]; then
-    echo "Setting up Isode X.400 API JAR..."
-    echo -e "${YELLOW}Warning: Isode X.400 JAR needs to be provided manually (proprietary).${NC}"
-    touch "$ISODE_X400_JAR"
-    echo -e "${YELLOW}Created placeholder at '$ISODE_X400_JAR'. Please replace with actual JAR.${NC}"
+if [ ! -s "$ISODE_X400_JAR" ]; then
+    echo -e "${YELLOW}Warning: Isode X.400 JAR is proprietary and was not found.${NC}"
+    create_jar_stub "$ISODE_X400_JAR" "Isode X.400 SDK"
 else
-    echo -e "${GREEN}Isode X.400 JAR already exists. Skipping.${NC}"
+    echo -e "${GREEN}Isode X.400 JAR found.${NC}"
 fi
 
 # 4.3 Isode Directory SDK
 ISODE_DIR_JAR="$LIB_DIR/isode-directory-api.jar"
-if [ ! -f "$ISODE_DIR_JAR" ]; then
-    echo "Setting up Isode Directory API JAR..."
-    echo -e "${YELLOW}Warning: Isode Directory JAR needs to be provided manually (proprietary).${NC}"
-    touch "$ISODE_DIR_JAR"
-    echo -e "${YELLOW}Created placeholder at '$ISODE_DIR_JAR'. Please replace with actual JAR.${NC}"
+if [ ! -s "$ISODE_DIR_JAR" ]; then
+    echo -e "${YELLOW}Warning: Isode Directory JAR is proprietary and was not found.${NC}"
+    create_jar_stub "$ISODE_DIR_JAR" "Isode Directory SDK"
 else
-    echo -e "${GREEN}Isode Directory JAR already exists. Skipping.${NC}"
+    echo -e "${GREEN}Isode Directory JAR found.${NC}"
 fi
+
+echo -e "\n${YELLOW}Note: Proprietary library stubs allow compilation but lack real logic.${NC}"
+echo -e "${YELLOW}Please replace them with real files for full AMHS/X.400 functionality.${NC}"
 
 # 5. Execute the remaining installation script
 echo -e "\n${CYAN}Executing remaining installation script...${NC}"

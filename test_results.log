@@ -139,3 +139,42 @@
 [2026-03-31 04:01:16] [GUI] Kết quả: PASS
 [2026-03-31 04:01:19] [PASS] CTSW102 - Reject AMQP missing required info: Message thiếu info đã bị reject đúng.
 [2026-03-31 04:01:19] [GUI] Kết quả: PASS
+[2026-04-03 05:15:08] [INFO] Khởi động AMHS/SWIM Gateway Test Tool...
+[2026-04-03 05:15:20] [GUI] Đang thực thi: CTSW017
+[2026-04-03 05:15:20] [INFO] Đang kết nối AMHS MTA tại: localhost
+[2026-04-03 05:15:27] [GUI] Đang thực thi: CTSW020
+[2026-04-03 05:15:27] [INFO] Đang kết nối AMHS MTA tại: localhost
+[2026-04-03 05:15:28] [GUI] Đang thực thi: CTSW018
+[2026-04-03 05:15:28] [INFO] Đang kết nối AMHS MTA tại: localhost
+[2026-04-03 05:15:29] [GUI] Đang thực thi: CTSW016
+[2026-04-03 05:15:29] [INFO] Đang kết nối AMHS MTA tại: localhost
+[2026-04-03 05:15:30] [GUI] Đang thực thi: CTSW019
+[2026-04-03 05:15:30] [INFO] Đang kết nối AMHS MTA tại: localhost
+[2026-04-03 05:15:30] [GUI] Đang thực thi: CTSW017
+[2026-04-03 05:15:30] [INFO] Đang kết nối AMHS MTA tại: localhost
+[2026-04-03 05:15:31] [GUI] Đang thực thi: CTSW014
+[2026-04-03 05:15:31] [INFO] Đang kết nối AMHS MTA tại: localhost
+[2026-04-03 05:15:31] [GUI] Đang thực thi: CTSW015
+[2026-04-03 05:15:31] [INFO] Đang kết nối AMHS MTA tại: localhost
+[2026-04-03 05:15:32] [GUI] Đang thực thi: CTSW013
+[2026-04-03 05:15:32] [INFO] Đang kết nối AMHS MTA tại: localhost
+[2026-04-03 05:15:33] [GUI] Đang thực thi: CTSW010
+[2026-04-03 05:15:33] [INFO] Đang kết nối AMHS MTA tại: localhost
+[2026-04-03 05:15:33] [GUI] Đang thực thi: CTSW008
+[2026-04-03 05:15:33] [INFO] Đang kết nối AMHS MTA tại: localhost
+[2026-04-03 05:15:33] [GUI] Đang thực thi: CTSW009
+[2026-04-03 05:15:33] [INFO] Đang kết nối AMHS MTA tại: localhost
+[2026-04-03 05:15:34] [GUI] Đang thực thi: CTSW007
+[2026-04-03 05:15:34] [INFO] Đang kết nối AMHS MTA tại: localhost
+[2026-04-03 05:15:34] [GUI] Đang thực thi: CTSW006
+[2026-04-03 05:15:34] [INFO] Đang kết nối AMHS MTA tại: localhost
+[2026-04-03 05:15:35] [GUI] Đang thực thi: CTSW005
+[2026-04-03 05:15:35] [INFO] Đang kết nối AMHS MTA tại: localhost
+[2026-04-03 05:15:36] [GUI] Đang thực thi: CTSW003
+[2026-04-03 05:15:36] [INFO] Đang kết nối AMHS MTA tại: localhost
+[2026-04-03 05:15:36] [GUI] Đang thực thi: CTSW004
+[2026-04-03 05:15:36] [INFO] Đang kết nối AMHS MTA tại: localhost
+[2026-04-03 05:15:36] [GUI] Đang thực thi: CTSW002
+[2026-04-03 05:15:36] [INFO] Đang kết nối AMHS MTA tại: localhost
+[2026-04-03 05:15:37] [GUI] Đang thực thi: CTSW001
+[2026-04-03 05:15:37] [INFO] Đang kết nối AMHS MTA tại: localhost

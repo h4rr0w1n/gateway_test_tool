@@ -10,8 +10,8 @@ import org.apache.qpid.proton.amqp.messaging.Data;
 import org.apache.qpid.proton.amqp.messaging.Section;
 import org.apache.qpid.proton.engine.*;
 import org.apache.qpid.proton.message.Message;
-import org.apache.qpid.proton.reactor.Reactor;
-import org.apache.qpid.proton.transport.Transport;
+import org.apache.qpid.proton.amqp.messaging.MessageAnnotations;
+import org.apache.qpid.proton.amqp.messaging.ApplicationProperties;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -102,7 +102,7 @@ public class QpidSwimAdapter implements SwimMessagingAdapter {
         // In real implementation, use Proton-J Client API with Reactor pattern
         // This is a simplified version for demonstration
         Connection conn = Proton.connection();
-        conn.setContainerId(containerId);
+        conn.setContainer(containerId);
         // Actual connection logic would use Reactor and Transport
         return conn;
     }
@@ -119,9 +119,9 @@ public class QpidSwimAdapter implements SwimMessagingAdapter {
         Message message = Proton.message();
         
         // Set message annotations
-        Map<String, Object> annotations = new HashMap<>();
-        annotations.put("x-amqp-topic", topic);
-        message.setMessageAnnotations(annotations);
+        Map<Symbol, Object> annotations = new HashMap<>();
+        annotations.put(Symbol.valueOf("x-amqp-topic"), topic);
+        message.setMessageAnnotations(new MessageAnnotations(annotations));
         
         // Set properties per AMQP 1.0 spec
         message.setAddress(topic);
@@ -146,14 +146,14 @@ public class QpidSwimAdapter implements SwimMessagingAdapter {
         }
         
         // Set application properties per EUR Doc 047
-        Map<Symbol, Object> appProperties = new HashMap<>();
+        Map<String, Object> appProperties = new HashMap<>();
         for (Map.Entry<String, Object> entry : properties.entrySet()) {
             String key = entry.getKey();
             if (key.startsWith("amhs_")) {
-                appProperties.put(Symbol.valueOf(key), entry.getValue());
+                appProperties.put(key, entry.getValue());
             }
         }
-        message.setApplicationProperties(appProperties);
+        message.setApplicationProperties(new ApplicationProperties(appProperties));
         
         // Set body - Data (binary) or AmqpValue (text)
         Section body = createBodySection(payload, 
@@ -186,16 +186,21 @@ public class QpidSwimAdapter implements SwimMessagingAdapter {
             sender.open();
         }
         
-        // Encode and send message
+        // Encode message
         ByteBuffer buffer = ByteBuffer.allocate(65536);
-        int encoded = message.encode(buffer);
+        message.encode(new org.apache.qpid.proton.codec.WritableBuffer.ByteBufferWrapper(buffer));
         buffer.flip();
         
-        byte[] data = new byte[encoded];
+        // Create delivery and send
+        byte[] tag = Long.toString(System.currentTimeMillis()).getBytes();
+        Delivery delivery = sender.delivery(tag);
+        
+        int encodedSize = buffer.remaining();
+        byte[] data = new byte[encodedSize];
         buffer.get(data);
         
-        Delivery delivery = sender.send(data, 0, encoded);
-        delivery.setTag(Long.toString(System.currentTimeMillis()).getBytes());
+        sender.send(data, 0, encodedSize);
+        sender.advance();
         
         // Wait for settlement
         while (!delivery.isSettled()) {
