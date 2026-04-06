@@ -1,7 +1,6 @@
 package com.amhs.swim.test.gui;
 
 import com.amhs.swim.test.testcase.*;
-import com.amhs.swim.test.config.TestConfig;
 import com.amhs.swim.test.util.Logger;
 
 import javax.swing.*;
@@ -24,15 +23,6 @@ public class TestFrame extends JFrame {
         swimToAmhsTests = new SwimToAmhsTests();
         
         initComponents();
-        
-        // Connect GUI log area to the central Logger
-        Logger.setLogListener(msg -> {
-            SwingUtilities.invokeLater(() -> {
-                logArea.append(msg + "\n");
-                logArea.setCaretPosition(logArea.getDocument().getLength());
-            });
-        });
-
         setSize(800, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -95,63 +85,7 @@ public class TestFrame extends JFrame {
         
         JScrollPane swimScroll = new JScrollPane(swimButtons);
         swimToAmhsPanel.add(swimScroll, BorderLayout.CENTER);
-        tabbedPane.addTab("Injection: SWIM to AMHS (16)", swimToAmhsPanel);
-        
-        // --- Tab: Configuration ---
-        JPanel configPanel = new JPanel(new GridLayout(0, 1, 10, 10));
-        configPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-
-        // SWIM Adapter Selection
-        JPanel adapterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        adapterPanel.add(new JLabel("SWIM Messaging Adapter:"));
-        String[] adapters = {"Solace JCSMP (Proprietary)", "Apache Qpid (Standard AMQP 1.0)"};
-        JComboBox<String> adapterCombo = new JComboBox<>(adapters);
-        adapterPanel.add(adapterCombo);
-        configPanel.add(adapterPanel);
-
-        // Broker Profile Selection
-        JPanel profilePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        profilePanel.add(new JLabel("AMQP Broker Profile:"));
-        String[] profiles = {"STANDARD", "AZURE_SERVICE_BUS", "IBM_MQ", "RABBITMQ", "SOLACE"};
-        JComboBox<String> profileCombo = new JComboBox<>(profiles);
-        profilePanel.add(profileCombo);
-        configPanel.add(profilePanel);
-
-        // Host & Port
-        JPanel hostPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        hostPanel.add(new JLabel("SWIM Broker Host:"));
-        JTextField hostField = new JTextField(TestConfig.getInstance().getProperty("swim.broker.host", "localhost"), 15);
-        hostPanel.add(hostField);
-        hostPanel.add(new JLabel("Port:"));
-        JTextField portField = new JTextField(TestConfig.getInstance().getProperty("swim.broker.port", "5672"), 5);
-        hostPanel.add(portField);
-        configPanel.add(hostPanel);
-
-        JButton checkConnBtn = new JButton("Check Connection");
-        checkConnBtn.addActionListener(e -> {
-            new Thread(() -> {
-                log("Đang kiểm tra kết nối tới " + hostField.getText() + ":" + portField.getText() + "...");
-                swimToAmhsTests.getSwimDriver().testConnection();
-            }).start();
-        });
-        configPanel.add(checkConnBtn);
-
-        JButton saveBtn = new JButton("Save & Apply Configuration");
-        saveBtn.addActionListener(e -> {
-            TestConfig config = TestConfig.getInstance();
-            config.setProperty("swim.broker.host", hostField.getText());
-            config.setProperty("swim.broker.port", portField.getText());
-            config.saveConfig();
-            
-            // Re-initialize drivers with new config
-            swimToAmhsTests = new SwimToAmhsTests();
-            amhsToSwimTests = new AmhsToSwimTests();
-            
-            log("Đã lưu và áp dụng cấu hình mới: " + hostField.getText() + ":" + portField.getText());
-        });
-        configPanel.add(saveBtn);
-
-        tabbedPane.addTab("Settings", new JScrollPane(configPanel));
+        tabbedPane.addTab("SWIM to AMHS (16)", swimToAmhsPanel);
         
         // --- Execution Log ---
         logArea = new JTextArea();
@@ -182,9 +116,9 @@ public class TestFrame extends JFrame {
         // Chạy test trong thread riêng để không treo GUI
         new Thread(() -> {
             try {
-                log("Đang thực thi injection: " + testCase.getTestCaseId());
+                log("Đang thực thi: " + testCase.getTestCaseId());
                 boolean result = testCase.execute();
-                log("Trạng thái truyền tin: " + (result ? "THÀNH CÔNG" : "THẤT BẠI"));
+                log("Kết quả: " + (result ? "PASS" : "FAIL"));
             } catch (Exception ex) {
                 log("Ngoại lệ: " + ex.getMessage());
                 ex.printStackTrace();

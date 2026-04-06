@@ -4,9 +4,6 @@ import com.amhs.swim.test.config.TestConfig;
 import com.amhs.swim.test.util.Logger;
 import com.solacesystems.jcsmp.*;
 
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.util.Map;
 
 /**
@@ -38,22 +35,6 @@ public class SolaceSwimAdapter implements SwimMessagingAdapter {
         return "Solace-JCSMP";
     }
     
-    @Override
-    public boolean canConnect() {
-        if (!isAvailable()) return false;
-        
-        TestConfig config = TestConfig.getInstance();
-        String host = config.getProperty("amhs.mta.host", "localhost");
-        int port = Integer.parseInt(config.getProperty("amhs.mta.port", "55555"));
-        
-        try (Socket socket = new Socket()) {
-            socket.connect(new InetSocketAddress(host, port), 2000); // 2 second timeout
-            return true;
-        } catch (IOException e) {
-            return false;
-        }
-    }
-
     @Override
     public void connect() throws Exception {
         if (!isAvailable()) {

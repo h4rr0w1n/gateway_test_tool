@@ -49,30 +49,15 @@ public class TestConfig {
         }
     }
 
-    public void setDefaults() {
+    private void setDefaults() {
         // Cấu hình mặc định cho môi trường test sandbox
         props.setProperty("amhs.mta.host", "localhost");
         props.setProperty("amhs.mta.port", "10000");
-        props.setProperty("swim.broker.host", "localhost");
-        props.setProperty("swim.broker.port", "5672");
+        props.setProperty("swim.broker.host", "tcp://localhost:55555");
         props.setProperty("swim.broker.vpn", "default");
         props.setProperty("directory.host", "ldap://localhost:389");
-        props.setProperty("gateway.max_recipients", "512");
-        props.setProperty("gateway.max_size", "1000000");
-    }
-
-    public void setProperty(String key, String value) {
-        props.setProperty(key, value);
-    }
-
-    public void saveConfig() {
-        File file = new File("config/test.properties");
-        try (java.io.FileOutputStream output = new java.io.FileOutputStream(file)) {
-            props.store(output, "AMHS/SWIM Gateway Test Tool Configuration");
-            System.out.println("Config saved to: " + file.getAbsolutePath());
-        } catch (Exception ex) {
-            System.err.println("Error saving configuration: " + ex.getMessage());
-        }
+        props.setProperty("gateway.max recipients", "512");
+        props.setProperty("gateway.max size", "1000000");
     }
 
     public String getProperty(String key) {

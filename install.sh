@@ -132,6 +132,38 @@ else
     echo -e "${GREEN}Isode Directory JAR found.${NC}"
 fi
 
+# 4.4 Check for AMQP 1.0 Broker
+echo -e "\n${CYAN}Checking for AMQP 1.0 Broker...${NC}"
+BROKER_FOUND=false
+for broker in qdrouterd rabbitmq-server activemq; do
+    if command -v "$broker" >/dev/null 2>&1; then
+        echo -e "${GREEN}AMQP Broker '$broker' is installed.${NC}"
+        BROKER_FOUND=true
+        break
+    fi
+done
+
+if [ "$BROKER_FOUND" = false ]; then
+    echo -e "${YELLOW}No AMQP 1.0 broker detected. Installing available AMQP broker...${NC}"
+    if command -v apt-get >/dev/null 2>&1; then
+        # Try qpid-dispatch first, then rabbitmq-server
+        if ! sudo apt-get install -y qpid-dispatch >/dev/null 2>&1; then
+            echo -e "${YELLOW}qpid-dispatch not found. Installing rabbitmq-server instead...${NC}"
+            install_package "rabbitmq-server"
+            echo -e "${CYAN}Enabling RabbitMQ AMQP 1.0 plugin...${NC}"
+            sudo rabbitmq-plugins enable rabbitmq_amqp1_0 || true
+            sudo systemctl restart rabbitmq-server || true
+            echo -e "${GREEN}RabbitMQ installed and AMQP 1.0 plugin enabled.${NC}"
+        else
+            echo -e "${GREEN}Qpid Dispatch installed successfully.${NC}"
+        fi
+        BROKER_FOUND=true
+    else
+        echo -e "${YELLOW}Could not automatically install an AMQP broker on this system.${NC}"
+        echo -e "Please install an AMQP 1.0 broker (e.g., Qpid, RabbitMQ, or ActiveMQ) manually."
+    fi
+fi
+
 echo -e "\n${YELLOW}Note: Proprietary library stubs allow compilation but lack real logic.${NC}"
 echo -e "${YELLOW}Please replace them with real files for full AMHS/X.400 functionality.${NC}"
 

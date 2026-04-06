@@ -10,33 +10,19 @@ import java.time.format.DateTimeFormatter;
  * Hỗ trợ ghi log ra console và file để phục vụ tra vết (traffic logging).
  */
 public class Logger {
-    public static final String LOG_FILE = "test_results.log";
+    private static final String LOG_FILE = "test_results.log";
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-    
-    private static LogListener listener;
-
-    public interface LogListener {
-        void onLog(String message);
-    }
-
-    public static void setLogListener(LogListener l) {
-        listener = l;
-    }
 
     /**
      * Ghi thông báo log.
-     * @param level Mức độ log (INFO, ERROR, SUCCESS, IMPORTANT).
+     * @param level Mức độ log (INFO, ERROR, SUCCESS).
      * @param message Nội dung log.
      */
     public static void log(String level, String message) {
         String timestamp = LocalDateTime.now().format(formatter);
-        String logEntry = String.format("[%s] [%s] %s", timestamp, level, message);
-        System.out.println(logEntry);
-        writeToFile(logEntry + "\n");
-        
-        if (listener != null) {
-            listener.onLog(logEntry);
-        }
+        String logEntry = String.format("[%s] [%s] %s%n", timestamp, level, message);
+        System.out.print(logEntry);
+        writeToFile(logEntry);
     }
 
     /**

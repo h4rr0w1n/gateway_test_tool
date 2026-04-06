@@ -18,10 +18,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.net.URL;
-import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -74,22 +71,6 @@ public class QpidSwimAdapter implements SwimMessagingAdapter {
     }
     
     @Override
-    public boolean canConnect() {
-        if (!isAvailable()) return false;
-        
-        TestConfig config = TestConfig.getInstance();
-        String host = config.getProperty("swim.broker.host", "localhost");
-        int port = Integer.parseInt(config.getProperty("swim.broker.port", "5672"));
-        
-        try (Socket socket = new Socket()) {
-            socket.connect(new InetSocketAddress(host, port), 2000); // 2 second timeout
-            return true;
-        } catch (IOException e) {
-            return false;
-        }
-    }
-
-    @Override
     public void connect() throws Exception {
         if (!isAvailable()) {
             throw new IllegalStateException("Apache Qpid Proton library not available");
@@ -132,35 +113,15 @@ public class QpidSwimAdapter implements SwimMessagingAdapter {
             connect();
         }
         
-        Logger.log("INFO", "Transmitting Aviation Message to SWIM via AMQP 1.0 to: " + topic);
+        Logger.log("INFO", "Publishing message via AMQP 1.0 to: " + topic);
         
         // Create AMQP 1.0 message per spec
         Message message = Proton.message();
         
         // Set message annotations
         Map<Symbol, Object> annotations = new HashMap<>();
-        // Add broker-specific annotations
-        applyBrokerProfileAnnotations(annotations, properties);
-        // Add user-provided annotations
-        if (properties.containsKey("amqp_message_annotations")) {
-            Map<String, Object> userAnn = (Map<String, Object>) properties.get("amqp_message_annotations");
-            for (Map.Entry<String, Object> entry : userAnn.entrySet()) {
-                annotations.put(Symbol.valueOf(entry.getKey()), entry.getValue());
-            }
-        }
-        if (!annotations.isEmpty()) {
-            message.setMessageAnnotations(new MessageAnnotations(annotations));
-        }
-
-        // Set delivery annotations
-        if (properties.containsKey("amqp_delivery_annotations")) {
-            Map<Symbol, Object> delAnn = new HashMap<>();
-            Map<String, Object> userDelAnn = (Map<String, Object>) properties.get("amqp_delivery_annotations");
-            for (Map.Entry<String, Object> entry : userDelAnn.entrySet()) {
-                delAnn.put(Symbol.valueOf(entry.getKey()), entry.getValue());
-            }
-            message.setDeliveryAnnotations(new org.apache.qpid.proton.amqp.messaging.DeliveryAnnotations(delAnn));
-        }
+        annotations.put(Symbol.valueOf("x-amqp-topic"), topic);
+        message.setMessageAnnotations(new MessageAnnotations(annotations));
         
         // Set properties per AMQP 1.0 spec
         message.setAddress(topic);
@@ -194,22 +155,10 @@ public class QpidSwimAdapter implements SwimMessagingAdapter {
         }
         message.setApplicationProperties(new ApplicationProperties(appProperties));
         
-        // Set body - Data, AmqpValue, or AmqpSequence
-        String bodyType = (String) properties.getOrDefault("amqp_body_type", "DATA");
+        // Set body - Data (binary) or AmqpValue (text)
         Section body = createBodySection(payload, 
-            (String) properties.getOrDefault("amhs_bodypart_type", "ia5-text"),
-            bodyType);
+            (String) properties.getOrDefault("amhs_bodypart_type", "ia5-text"));
         message.setBody(body);
-
-        // Set footer
-        if (properties.containsKey("amqp_footer")) {
-            Map<Symbol, Object> footerMap = new HashMap<>();
-            Map<String, Object> userFooter = (Map<String, Object>) properties.get("amqp_footer");
-            for (Map.Entry<String, Object> entry : userFooter.entrySet()) {
-                footerMap.put(Symbol.valueOf(entry.getKey()), entry.getValue());
-            }
-            message.setFooter(new org.apache.qpid.proton.amqp.messaging.Footer(footerMap));
-        }
         
         // Send message via AMQP 1.0 sender link
         sendAmqpMessage(message);
@@ -220,40 +169,11 @@ public class QpidSwimAdapter implements SwimMessagingAdapter {
     /**
      * Create body section based on content type.
      */
-    private Section createBodySection(byte[] payload, String bodyPartType, String bodyType) {
-        if ("AMQP_VALUE".equalsIgnoreCase(bodyType)) {
-            if ("ia5-text".equalsIgnoreCase(bodyPartType) || "utf8-text".equalsIgnoreCase(bodyPartType)) {
-                return new AmqpValue(new String(payload, StandardCharsets.UTF_8));
-            } else {
-                return new AmqpValue(new Binary(payload));
-            }
-        } else if ("AMQP_SEQUENCE".equalsIgnoreCase(bodyType)) {
-            java.util.List<Object> list = new java.util.ArrayList<>();
-            list.add(new Binary(payload));
-            return new org.apache.qpid.proton.amqp.messaging.AmqpSequence(list);
+    private Section createBodySection(byte[] payload, String bodyPartType) {
+        if ("ia5-text".equalsIgnoreCase(bodyPartType) || "utf8-text".equalsIgnoreCase(bodyPartType)) {
+            return new AmqpValue(new String(payload, StandardCharsets.UTF_8));
         } else {
-            // Default to DATA
             return new Data(new Binary(payload));
-        }
-    }
-
-    private void applyBrokerProfileAnnotations(Map<Symbol, Object> annotations, Map<String, Object> properties) {
-        String profileStr = (String) properties.getOrDefault("amqp_broker_profile", "STANDARD");
-        SwimDriver.AMQPProperties.BrokerProfile profile = SwimDriver.AMQPProperties.BrokerProfile.valueOf(profileStr);
-        
-        switch (profile) {
-            case AZURE_SERVICE_BUS:
-                annotations.put(Symbol.valueOf("x-opt-enqueued-time"), System.currentTimeMillis());
-                annotations.put(Symbol.valueOf("x-opt-partition-key"), "amhs-partition");
-                break;
-            case IBM_MQ:
-                annotations.put(Symbol.valueOf("x-opt-ibm-mq-priority"), properties.getOrDefault("amhs_ats_pri", "FF"));
-                break;
-            case RABBITMQ:
-                annotations.put(Symbol.valueOf("x-amqp-0-9-1-routing-key"), properties.get("amhs_recipients"));
-                break;
-            default:
-                break;
         }
     }
     
@@ -266,22 +186,9 @@ public class QpidSwimAdapter implements SwimMessagingAdapter {
             sender.open();
         }
         
-        // Encode message with dynamic buffer sizing
-        int bufferSize = 65536;
-        ByteBuffer buffer = ByteBuffer.allocate(bufferSize);
-        while (true) {
-            try {
-                buffer.clear();
-                message.encode(new org.apache.qpid.proton.codec.WritableBuffer.ByteBufferWrapper(buffer));
-                break;
-            } catch (BufferOverflowException e) {
-                bufferSize *= 2;
-                if (bufferSize > 100 * 1024 * 1024) { // 100MB limit for safety
-                    throw new Exception("Message too large to encode even with 100MB buffer", e);
-                }
-                buffer = ByteBuffer.allocate(bufferSize);
-            }
-        }
+        // Encode message
+        ByteBuffer buffer = ByteBuffer.allocate(65536);
+        message.encode(new org.apache.qpid.proton.codec.WritableBuffer.ByteBufferWrapper(buffer));
         buffer.flip();
         
         // Create delivery and send

@@ -14,11 +14,6 @@
             <artifactId>proton-j</artifactId>
             <version>0.34.1</version>
         </dependency>
-        <dependency>
-            <groupId>org.apache.qpid</groupId>
-            <artifactId>qpid-jms-client</artifactId>
-            <version>1.1.0</version>
-        </dependency>
         
         <!-- Solace JCSMP API (proprietary - optional, dùng cho legacy deployments) -->
         <!-- Nếu có trong classpath, sẽ được ưu tiên sử dụng thay vì Qpid -->
@@ -68,11 +63,6 @@
                 <artifactId>maven-assembly-plugin</artifactId>
                 <version>3.3.0</version>
                 <configuration>
-                    <archive>
-                        <manifest>
-                            <mainClass>com.amhs.swim.test.Main</mainClass>
-                        </manifest>
-                    </archive>
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>
