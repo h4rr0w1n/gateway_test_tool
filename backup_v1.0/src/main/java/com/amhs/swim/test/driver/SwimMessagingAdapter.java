@@ -9,12 +9,6 @@ import java.util.Map;
 public interface SwimMessagingAdapter {
 
     /**
-     * Kiểm tra xem Broker có sẵn sàng để kết nối hay không (TCP check).
-     * @return true nếu host/port reachable, ngược lại false.
-     */
-    boolean canConnect();
-    
-    /**
      * Initialize the connection.
      * @throws Exception if connection fails
      */

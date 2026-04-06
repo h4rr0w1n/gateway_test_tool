@@ -40,32 +40,24 @@ public class SwimDriver {
         
         // Try Solace first (legacy/proprietary)
         SolaceSwimAdapter solaceAdapter = new SolaceSwimAdapter();
-        if (solaceAdapter.isAvailable() && solaceAdapter.canConnect()) {
+        if (solaceAdapter.isAvailable()) {
             this.activeAdapter = solaceAdapter;
-            Logger.log("SUCCESS", "Selected Solace JCSMP adapter (proprietary API detected & reachable).");
+            Logger.log("SUCCESS", "Selected Solace JCSMP adapter (proprietary API detected).");
             return;
         }
         
         // Fallback to Qpid (standard AMQP 1.0)
         QpidSwimAdapter qpidAdapter = new QpidSwimAdapter();
-        if (qpidAdapter.isAvailable() && qpidAdapter.canConnect()) {
+        if (qpidAdapter.isAvailable()) {
             this.activeAdapter = qpidAdapter;
-            Logger.log("SUCCESS", "Selected Qpid AMQP 1.0 adapter (standard AMQP 1.0 & reachable).");
+            Logger.log("SUCCESS", "Selected Qpid AMQP 1.0 adapter (standard AMQP 1.0).");
             return;
         }
-
-        // If we reach here, either the libraries are missing OR the brokers are offline
-        if (solaceAdapter.isAvailable() || qpidAdapter.isAvailable()) {
-            throw new IllegalStateException(
-                "AMQP software/driver is missing: Connection refused to configured broker hosts. " +
-                "Please ensure your AMQP broker (Solace, Qpid, etc.) is running."
-            );
-        }
         
-        // No adapter available in classpath
+        // No adapter available
         throw new IllegalStateException(
-            "No SWIM messaging adapter libraries found in classpath. " +
-            "Please ensure either Solace JCSMP or Apache Qpid Proton-J is included."
+            "No SWIM messaging adapter available. " +
+            "Please ensure either Solace JCSMP or Apache Qpid Proton-J is in the classpath."
         );
     }
     
@@ -80,23 +72,6 @@ public class SwimDriver {
         
         activeAdapter.connect();
         isConnected = true;
-    }
-
-    /**
-     * Kiểm tra kết nối tới SWIM Broker (dùng cho nút Check Connection trong GUI).
-     */
-    public void testConnection() {
-        try {
-            if (activeAdapter != null) {
-                activeAdapter.close();
-            }
-            activeAdapter = null;
-            isConnected = false;
-            
-            connect();
-        } catch (Exception e) {
-            Logger.log("ERROR", "Connection test failed: " + e.getMessage());
-        }
     }
     
     /**
@@ -275,39 +250,9 @@ public class SwimDriver {
         private String secEnvelope;      // amhs_sec_envelope (cho signed messages)
         private String replyTo;          // amqp reply-to
         
-        // Advanced AMQP 1.0 Sections for Multi-Broker Support
-        private Map<String, Object> messageAnnotations;
-        private Map<String, Object> deliveryAnnotations;
-        private Map<String, Object> footer;
-        private BrokerProfile brokerProfile = BrokerProfile.STANDARD;
-        private BodyType bodyType = BodyType.DATA;
-
-        public enum BrokerProfile {
-            STANDARD, AZURE_SERVICE_BUS, IBM_MQ, RABBITMQ, SOLACE
-        }
-
-        public enum BodyType {
-            DATA, AMQP_VALUE, AMQP_SEQUENCE
-        }
-        
-        public AMQPProperties() {
-            this.messageAnnotations = new HashMap<>();
-            this.deliveryAnnotations = new HashMap<>();
-            this.footer = new HashMap<>();
-        }
+        public AMQPProperties() {}
         
         // Getters and Setters
-        public Map<String, Object> getMessageAnnotations() { return messageAnnotations; }
-        public void setMessageAnnotations(Map<String, Object> annotations) { this.messageAnnotations = annotations; }
-        
-        public Map<String, Object> getDeliveryAnnotations() { return deliveryAnnotations; }
-        public void setDeliveryAnnotations(Map<String, Object> annotations) { this.deliveryAnnotations = annotations; }
-        
-        public BrokerProfile getBrokerProfile() { return brokerProfile; }
-        public void setBrokerProfile(BrokerProfile profile) { this.brokerProfile = profile; }
-
-        public BodyType getBodyType() { return bodyType; }
-        public void setBodyType(BodyType type) { this.bodyType = type; }
         public String getAtsPri() { return atsPri; }
         public void setAtsPri(String atsPri) { this.atsPri = atsPri; }
         
@@ -361,11 +306,6 @@ public class SwimDriver {
             if (dlHistory != null) map.put("amhs_dl_history", dlHistory);
             if (secEnvelope != null) map.put("amhs_sec_envelope", secEnvelope);
             if (replyTo != null) map.put("amhs_reply_to", replyTo);
-            if (messageAnnotations != null && !messageAnnotations.isEmpty()) map.put("amqp_message_annotations", messageAnnotations);
-            if (deliveryAnnotations != null && !deliveryAnnotations.isEmpty()) map.put("amqp_delivery_annotations", deliveryAnnotations);
-            if (footer != null && !footer.isEmpty()) map.put("amqp_footer", footer);
-            map.put("amqp_broker_profile", brokerProfile.name());
-            map.put("amqp_body_type", bodyType.name());
             return map;
         }
         
@@ -386,15 +326,7 @@ public class SwimDriver {
             if (map.containsKey("amhs_dl_history")) props.setDlHistory((String) map.get("amhs_dl_history"));
             if (map.containsKey("amhs_sec_envelope")) props.setSecEnvelope((String) map.get("amhs_sec_envelope"));
             if (map.containsKey("amhs_reply_to")) props.setReplyTo((String) map.get("amhs_reply_to"));
-            if (map.containsKey("amqp_message_annotations")) props.setMessageAnnotations((Map<String, Object>) map.get("amqp_message_annotations"));
-            if (map.containsKey("amqp_delivery_annotations")) props.setDeliveryAnnotations((Map<String, Object>) map.get("amqp_delivery_annotations"));
-            if (map.containsKey("amqp_footer")) props.setFooter((Map<String, Object>) map.get("amqp_footer"));
-            if (map.containsKey("amqp_broker_profile")) props.setBrokerProfile(BrokerProfile.valueOf((String) map.get("amqp_broker_profile")));
-            if (map.containsKey("amqp_body_type")) props.setBodyType(BodyType.valueOf((String) map.get("amqp_body_type")));
             return props;
         }
-
-        public Map<String, Object> getFooter() { return footer; }
-        public void setFooter(Map<String, Object> footer) { this.footer = footer; }
     }
 }
