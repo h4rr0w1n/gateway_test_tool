@@ -43,11 +43,13 @@ public class SolaceSwimAdapter implements SwimMessagingAdapter {
         if (!isAvailable()) return false;
         
         TestConfig config = TestConfig.getInstance();
-        String host = config.getProperty("amhs.mta.host", "localhost");
-        int port = Integer.parseInt(config.getProperty("amhs.mta.port", "55555"));
+        String host = config.getProperty("swim.broker.host", "localhost");
+        String port = config.getProperty("swim.broker.port", "55555");
+        
+        String[] normalized = normalizeSolaceConnection(host, port);
         
         try (Socket socket = new Socket()) {
-            socket.connect(new InetSocketAddress(host, port), 2000); // 2 second timeout
+            socket.connect(new InetSocketAddress(normalized[1], Integer.parseInt(normalized[2])), 2000); // 2 second timeout
             return true;
         } catch (IOException e) {
             return false;
@@ -67,20 +69,8 @@ public class SolaceSwimAdapter implements SwimMessagingAdapter {
         String pass = config.getProperty("swim.broker.password", "default");
         String vpn = config.getProperty("swim.broker.vpn", "default");
         
-        String connectionUrl;
-        if (host.contains("://")) {
-            // If it's already a full URL (e.g. tcp://localhost:55555 or tcp://localhost)
-            // Check if it already has a port
-            String addressPart = host.substring(host.indexOf("://") + 3);
-            if (addressPart.contains(":")) {
-                connectionUrl = host;
-            } else {
-                connectionUrl = host + ":" + port;
-            }
-        } else {
-            // Assume it's just a host, prepend protocol and append port
-            connectionUrl = "tcp://" + host + ":" + port;
-        }
+        String[] normalized = normalizeSolaceConnection(host, port);
+        String connectionUrl = normalized[0] + "://" + normalized[1] + ":" + normalized[2];
         
         Logger.log("INFO", "Connecting to SWIM Broker via Solace JCSMP at: " + connectionUrl);
         
@@ -203,6 +193,42 @@ public class SolaceSwimAdapter implements SwimMessagingAdapter {
         Logger.log("SUCCESS", "Solace JCSMP connection closed.");
     }
     
+    private String[] normalizeSolaceConnection(String host, String port) {
+        String finalHost = host;
+        String finalPort = port;
+        String scheme = "tcp";
+
+        if (finalHost.contains("://")) {
+            String[] parts = finalHost.split("://");
+            scheme = parts[0];
+            String address = parts[1];
+            
+            if (address.contains(":")) {
+                String[] addrParts = address.split(":");
+                finalHost = addrParts[0];
+                finalPort = addrParts[1];
+            } else {
+                finalHost = address;
+            }
+        }
+        
+        // Map AMQP schemes to SMF schemes since JCSMP only uses SMF
+        if (scheme.equalsIgnoreCase("amqps") || scheme.equalsIgnoreCase("tcps") || scheme.equalsIgnoreCase("https")) {
+            scheme = "tcps";
+        } else {
+            scheme = "tcp";
+        }
+        
+        // Map standard AMQP ports to Solace standard SMF ports
+        if ("5672".equals(finalPort)) {
+            finalPort = "55555";
+        } else if ("5671".equals(finalPort)) {
+            finalPort = "55443";
+        }
+        
+        return new String[] { scheme, finalHost, finalPort };
+    }
+
     private int mapAmhsPriorityToInt(String amhsPriority) {
         if (amhsPriority == null) return 4;
         switch (amhsPriority.toUpperCase()) {

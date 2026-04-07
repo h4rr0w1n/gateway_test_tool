@@ -6,8 +6,8 @@ import java.io.InputStream;
 import java.util.Properties;
 
 /**
- * Lớp quản lý cấu hình cho công cụ kiểm thử.
- * Đọc các tham số kết nối từ file properties.
+ * Configuration manager for the test tool.
+ * Handles loading properties from classpath defaults and local file overrides.
  */
 public class TestConfig {
     private static TestConfig instance;
@@ -26,7 +26,7 @@ public class TestConfig {
     }
 
     private void loadConfig() {
-        // 1. Load default from classpath
+        // 1. Load default configuration from classpath resources
         try (InputStream input = getClass().getClassLoader().getResourceAsStream("config/test.properties")) {
             if (input != null) {
                 props.load(input);
@@ -37,7 +37,7 @@ public class TestConfig {
             setDefaults();
         }
 
-        // 2. Load overriding config from local config/test.properties
+        // 2. Load external overrides from config/test.properties if present
         File file = new File("config/test.properties");
         if (file.exists()) {
             try (InputStream input = new FileInputStream(file)) {
@@ -50,15 +50,20 @@ public class TestConfig {
     }
 
     public void setDefaults() {
-        // Cấu hình mặc định cho môi trường test sandbox
+        // Default fallback values for sandbox environment
         props.setProperty("amhs.mta.host", "localhost");
         props.setProperty("amhs.mta.port", "10000");
         props.setProperty("swim.broker.host", "localhost");
         props.setProperty("swim.broker.port", "5672");
+        props.setProperty("swim.broker.user", "default");
+        props.setProperty("swim.broker.password", "default");
         props.setProperty("swim.broker.vpn", "default");
+        props.setProperty("swim.container.id", "amhs-swim-gateway-test");
         props.setProperty("directory.host", "ldap://localhost:389");
         props.setProperty("gateway.max_recipients", "512");
         props.setProperty("gateway.max_size", "1000000");
+        props.setProperty("gateway.default_topic", "TEST.TOPIC");
+        props.setProperty("gateway.test_recipient", "VVTSYMYX");
     }
 
     public void setProperty(String key, String value) {
