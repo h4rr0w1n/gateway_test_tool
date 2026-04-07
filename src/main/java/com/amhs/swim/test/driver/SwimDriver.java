@@ -263,6 +263,7 @@ public class SwimDriver {
      */
     public static class AMQPProperties {
         private String atsPri;           // amhs_ats_pri: SS/DD/FF/GG/KK
+        private Short amqpPriority;      // standard amqp priority: 0-9
         private String recipients;       // amhs_recipients: danh sách recipients
         private String bodyPartType;     // amhs_bodypart_type: ia5-text, utf8-text, etc.
         private String contentType;      // amhs_content_type
@@ -308,6 +309,10 @@ public class SwimDriver {
 
         public BodyType getBodyType() { return bodyType; }
         public void setBodyType(BodyType type) { this.bodyType = type; }
+        
+        public Short getAmqpPriority() { return amqpPriority; }
+        public void setAmqpPriority(Short amqpPriority) { this.amqpPriority = amqpPriority; }
+        
         public String getAtsPri() { return atsPri; }
         public void setAtsPri(String atsPri) { this.atsPri = atsPri; }
         
@@ -349,6 +354,7 @@ public class SwimDriver {
          */
         public Map<String, Object> toMap() {
             Map<String, Object> map = new HashMap<>();
+            if (amqpPriority != null) map.put("amqp_priority", amqpPriority);
             if (atsPri != null) map.put("amhs_ats_pri", atsPri);
             if (recipients != null) map.put("amhs_recipients", recipients);
             if (bodyPartType != null) map.put("amhs_bodypart_type", bodyPartType);

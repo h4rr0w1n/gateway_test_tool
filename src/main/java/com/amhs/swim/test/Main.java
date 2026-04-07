@@ -6,13 +6,14 @@ import com.amhs.swim.test.util.Logger;
 import javax.swing.*;
 
 /**
- * Điểm vào chính của ứng dụng.
+ * Main entry point of the AMHS/SWIM Gateway Test Tool.
+ * Initializes the Swing GUI and starts the application.
  */
 public class Main {
     public static void main(String[] args) {
         Logger.log("INFO", "Khởi động AMHS/SWIM Gateway Test Tool...");
         
-        // Thiết lập giao diện Swing
+        // Initialize and setup the Swing User Interface
         SwingUtilities.invokeLater(() -> {
             try {
                 UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());

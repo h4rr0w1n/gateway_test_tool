@@ -6,8 +6,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 /**
- * Tiện ích ghi log cho công cụ kiểm thử.
- * Hỗ trợ ghi log ra console và file để phục vụ tra vết (traffic logging).
+ * Logging utility for the test tool.
+ * Supports console output and file logging for traffic tracing.
  */
 public class Logger {
     public static final String LOG_FILE = "test_results.log";
@@ -40,9 +40,21 @@ public class Logger {
     }
 
     /**
-     * Ghi log traffic cho yêu cầu kiểm thử (theo EUR Doc 047).
-     * @param direction Hướng message (AMHS->SWIM hoặc SWIM->AMHS).
-     * @param content Nội dung raw của message.
+     * Records a verification summary for a specific test case.
+     * @param caseId The ID of the test case (e.g., CTSW101).
+     * @param details The summary details to be displayed.
+     */
+    public static void logVerification(String caseId, String details) {
+        log("SUCCESS", "\n" + "=".repeat(60) + "\n" + 
+            " [" + caseId + "] VERIFICATION SUMMARY\n" + 
+            " ".repeat(2) + details.replace("\n", "\n  ") + "\n" +
+            "=".repeat(60) + "\n");
+    }
+
+    /**
+     * Records traffic log for a test request (as per EUR Doc 047).
+     * @param direction Direction (AMHS->SWIM or SWIM->AMHS).
+     * @param content Raw message content.
      */
     public static void logTraffic(String direction, String content) {
         log("TRAFFIC", "Direction: " + direction);

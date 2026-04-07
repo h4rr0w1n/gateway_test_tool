@@ -1,0 +1,1171 @@
+AMHS/SWIM Gateway Testing Plan
+
+AST PG
+
+5 GATEWAY OPERATIONS (AMQP TO AMHS)
+CTSW101 – CONVERT AN AMHS UNAWARE AMQP MESSAGE TO AMHS
+
+CTSW101
+Test criteria
+
+Convert an AMHS unaware AMQP message to AMHS
+This test is successful, if the IUT converts an AMQP message with
+minimal required (AMHS-unaware service level) information to an
+AMHS message (IPM) correctly.
+Check that parameters related to AMHS-unaware service level are
+correct.
+Note.— The AMHS-unaware service level is intended for SWIM information
+providers and consumers not being aware of the exchange of aeronautical
+information with AMHS users by means of the AMHS/SWIM Gateway.
+
+Check value of “ATSMHS Service Level” parameter in order to
+determine whether Basic or Extended should be generated.
+Note.— This parameter is not under testing in this specific test case. It will be
+tested on CTSW103
+
+Scenario
+description
+
+From the AMQP test interface send an AMQP text message to the
+IUT. The AMQP text message shall address a remote AMHS user and
+consist of AMQP priority property with default value (4) and specify
+a text payload within the AMQP property amqp-value.
+Check that the AMHS Test Tool receives an AMHS message from the
+IUT via the AMHS transfer port. In particular, verify that:
+• the payload of the received AMHS message contains the text
+send from the AMQP test interface.
+• the AMQP default priority has been correctly translated to the
+element ATS-message-priority or the IPM precedence and to
+the AMHS message transfer envelope priority depending on
+“ATSMHS Service Level” parameter.
+• the filing time corresponding with the creation time of the
+AMQP message is correctly inserted and converted to format
+DDhhmm in the ATS-message-header or in the
+Authorization-time if the message contains IHE depending on
+“ATSMHS Service Level” parameter.
+• the addressee indicator of the application property
+amhs_recipients is correctly translated in the corresponding
+AMHS OR address and entered as primary-recipient in the
+IPM heading and as recipient-name in the MTE.
+• the trace-information or the element internal-trace
+information element are in accordance with sections 4.5.4.274.5.4.31 of EUR Doc 047.
+• the sub-components country-name, administration-domainname and private-domain-identifier of the component globaldomain-identifier of the element message-identifier
+correspond to the values of the respective AMHS
+management domain operating the AMHS/SWIM gateway
+and that the component local-identifier is different from the
+local-identifier of any other AMHS message, probe or report
+generated in the AMHS management domain operating the
+AMHS/SWIM Gateway as specified in section 4.5.4.17 of
+EUR Doc 047.
+
+EUR Doc 047
+Appendix A
+
+39
+
+06/05/2025
+
+AMHS/SWIM Gateway Testing Plan
+
+AST PG
+
+The following components of the element per-message-indicators
+are present in the MTE:
+• alternate-recipient-allowed with the abstract value “alternaterecipient-allowed”
+• disclosure-of-other-recipients takes the abstract value
+“disclosure-of-other-recipients-prohibited”
+• implicit-conversion-prohibited takes the abstract value
+“implicit-conversion-allowed”
+• content-return-request takes the abstract value “contentreturn-not-requested”
+The following components of the element extensions are not
+present or are present in the MTE with their default values:
+• recipient-reassignment-prohibited with the abstract value
+“recipient-reassignment-allowed”
+• dl-expansion-prohibited takes the abstract value “dlexpansion-allowed”
+• conversion-with-loss-prohibited takes the abstract value
+“conversion-with-loss-allowed”
+The components of the element per-recipient-indicators are
+generated taking the following abstract-values:
+• “responsible” for the responsibility element
+• “non-delivery-report” for the originating-MTA-report-request
+element
+• “non-delivery-report” for the originator-report-request
+element
+From the AMQP test interface send a AMQP binary message. The
+AMQP message shall address a remote AMHS user and consist of
+AMQP priority property with default value (4) and specify binary
+payload within AMQP data property.
+Check the IPMs that the AMHS Test Tool receives an AMHS
+message from the IUT via the AMHS transfer port. In particular,
+verify that:
+• the payload of the received AMHS message contains the
+binary content send from the AMQP test interface.
+• the AMQP default priority has been correctly translated to the
+element ATS-message-priority or the IPM precedence and to
+the AMHS message transfer envelope priority depending on
+“ATSMHS Service Level” parameter.
+• the filing time corresponding with the creation time of the
+AMQP message is correctly inserted and converted to format
+DDhhmm in the ATS-message-header or in the
+Authorization-time if the message contains IHE depending on
+“ATSMHS Service Level” parameter.
+• the addressee indicator of the application property
+amhs_recipients is correctly translated in the corresponding
+AMHS OR address and entered as primary-recipient in the
+IPM heading and as recipient-name in the MTE.
+
+EUR Doc 047
+Appendix A
+
+40
+
+06/05/2025
+
+AMHS/SWIM Gateway Testing Plan
+
+•
+•
+
+AST PG
+
+the trace-information or the element internal-trace
+information element are in accordance with sections 4.5.4.274.5.4.31 of EUR Doc 0474..
+the sub-components country-name, administration-domainname and private-domain-identifier of the component globaldomain-identifier of the element message-identifier
+correspond to the values of the respective AMHS
+management domain operating the AMHS/SWIM gateway
+and that the component local-identifier is different from the
+local-identifier of any other AMHS message, probe or report
+generated in the AMHS management domain operating the
+AMHS/SWIM Gateway as specified in section 4.5.4.17 of
+EUR Doc 047.
+
+The following components of the element per-message-indicators
+are present in the MTE:
+• alternate-recipient-allowed with the abstract value “alternaterecipient-allowed”
+• disclosure-of-other-recipients takes the abstract value
+“disclosure-of-other-recipients-prohibited”
+• implicit-conversion-prohibited takes the abstract value
+“implicit-conversion-allowed”
+• content-return-request takes the abstract value “contentreturn-not-requested”
+The following components of the element extensions are not
+present or are present in the MTE with their default values:
+• recipient-reassignment-prohibited with the abstract value
+“recipient-reassignment-allowed”
+• dl-expansion-prohibited takes the abstract value “dlexpansion-allowed”
+• conversion-with-loss-prohibited takes the abstract value
+“conversion-with-loss-allowed”
+The components of the element per-recipient-indicators are
+generated taking the following abstract-values:
+• “responsible” for the responsibility element
+• “non-delivery-report” for the originating-MTA-report-request
+element
+• “non-delivery-report” for the originator-report-request
+element
+Ref Doc 047
+
+EUR Doc 047
+Appendix A
+
+4.5.2.2 amhs_ats_pri
+4.5.2.9 amhs_recipients
+4.5.3.3 primary-recipients
+4.5.4.12 recipient-reassignment-prohibited, dl-expansion-prohibited
+and conversion-with- loss-prohibited implies, are assumed to take
+their default abstract-values
+4.5.4.13 recipient-name
+4.5.4.15 per-recipient-indicators
+4.5.4.16 global-domain-identifier
+4.5.4.17 local-identifier
+4.5.4.18 country-name
+4.5.4.19 administration-domain-name
+
+41
+
+06/05/2025
+
+AMHS/SWIM Gateway Testing Plan
+
+AST PG
+
+4.5.4.20 private-domain-identifier
+4.5.4.21 disclosure-of-other-recipients
+4.5.4.22 implicit-conversion-prohibited
+4.5.4.23 alternate-recipient-allowed
+4.5.4.24 content-return-request
+4.5.4.25 AMHS management domain
+4.5.4.27 global-domain-identifier in the trace-information or in the
+internal-trace-information
+4.5.4.28 arrival-time in the first element of trace-information or of
+internal-trace-information
+4.5.4.29 routing-action
+4.5.4.30 mta-name
+4.5.4.31
+4.5.1.9
+Test class
+
+EUR Doc 047
+Appendix A
+
+Normal communications (N)
+
+42
+
+06/05/2025
+
+AMHS/SWIM Gateway Testing Plan
+
+AST PG
+
+CTSW102 – REJECT AN AMQP MESSAGE IF IT DOES NOT CONTAIN THE MINIMUM INFORMATION
+NECESSARY TO TRANSFER TO AMHS (AMHS UNAWARE)
+
+CTSW102
+Test criteria
+
+Reject an AMQP message if it does not contain the minimum
+information necessary to transfer to AMHS (AMHS unaware)
+This test is successful, if the IUT rejects a received AMQP message if
+it does not contain the minimum information necessary to transfer.
+For AMHS unaware service level, the minimum information
+necessary to transfer SWIM Information Objects to AMHS is:
+• priority element in header section.
+• message-id element in properties section.
+• creation-time element in properties section.
+• data or amqp-value element in application data section.
+• amhs_recipients in application properties section.
+• content-type element in properties section.
+Note that some of these fields are generally set by the AMQP APIs
+and can’t be changed, so generation of messages with these fields is
+specified as optional in scenario description.
+
+Scenario
+description
+
+From the SWIM Test Tool send a sequence of AMQP messages to the
+IUT addressing an AMHS user.
+Text messages
+The following messages shall contain <text/plain; charset=”utf-8”>
+content-type.
+•
+•
+•
+•
+•
+
+The first AMQP message shall have 10 as priority.
+Optionally, the second AMQP message shall have empty
+message-id element.
+Optionally, the third AMQP message shall have 0 as creationtime.
+The fourth AMQP message shall have empty amqp-value.
+The fifth AMQP message shall have empty amhs_recipients
+element.
+
+Optionally, another AMQP message shall have empty content-type
+element.
+
+Binary messages
+The following messages shall contain <application/octet-stream>
+content-type.
+•
+•
+•
+
+EUR Doc 047
+Appendix A
+
+The first AMQP message shall have 10 as priority.
+Optionally, the second AMQP message shall have empty
+message-id element.
+Optionally, the third AMQP message shall have 0 as creationtime.
+
+43
+
+06/05/2025
+
+AMHS/SWIM Gateway Testing Plan
+
+AST PG
+
+•
+•
+
+The fourth AMQP message shall have empty data element.
+The fifth AMQP message shall have an address of more than
+eight letters as amhs_recipients element.
+Optionally, another AMQP message shall have empty content-type
+element.
+Verify that all messages are rejected, logged, and reported to the
+Control Position.
+Ref Doc 047
+
+Test class
+
+EUR Doc 047
+Appendix A
+
+4.5.1.1 priority
+4.5.1.2 message-id
+4.5.1.3 creation-time
+4.5.1.4 amqp-value
+4.5.1.5 amhs_recipients
+4.5.2.2 correct value of priority
+4.5.2.10 correct value of creation-time
+Erroneous AMQP messages (E1)
+
+44
+
+06/05/2025
+
+AMHS/SWIM Gateway Testing Plan
+
+AST PG
+
+CTSW103 – CONVERSION TO IPM ACCORDING TO ATSMHS SERVICE LEVEL PARAMETER
+
+CTSW103
+Test criteria
+
+Conversion to IPM according to ATSMHS Service Level
+parameter
+This test is successful, if the IUT converts any AMQP messages to
+AMHS messages (IPM) correctly according to the “ATSMHS Service
+Level” parameter.
+Since implementation of all the possible values of the ATSMHS
+Service Level parameter is not mandatory, this test must be adjusted
+to test only the implemented options.
+
+Scenario
+description
+
+From the AMQP test interface send a sequence of AMQP messages to
+the IUT.
+The sequence of AMQP messages shall address a remote AMHS user
+and consist of seven messages.
+ATSMHS Service Level – Basic
+For the first message, the ATSMHS Service Level parameter shall be
+set to “basic”.
+Then AMQP elements susceptible to being translated using extended
+or basic ATSMHS service level will be mapped to basic service level.
+Check the IPM that the AMHS Test Tool receives. Verify that the
+IUT has converted the message correctly accordingly:
+•
+•
+•
+
+•
+
+amhs_ats_ohi shall be conveyed as the value of the optional
+heading information element in the ATS-message-OptionalHeading-Info
+amhs_ats_ft shall be conveyed as the value of the ATSmessage-Filing-Time
+amhs_ats_pri shall be conveyed as the value of the priorityindicator of the ATS-message-priority element of the AMHS
+message, in compliance with the mapping specified in the
+Table 9 of the EUR Doc 047
+amqp-value shall be conveyed as the value of the ATS-message-text
+of the AMHS message
+
+The second AMQP message shall contain binary content. In this case,
+the message will be rejected. Check that the situation has been logged
+and reported to the Control Position for appropriate action.
+ATSMHS Service Level – Extended.
+For the third message, the ATSMHS Service Level parameter shall be
+set to “extended”.
+The AMQP elements susceptible to being translated using extended or
+basic ATSMHS service level will be mapped to extended service
+level.
+Check the IPM that the AMHS Test Tool receives. Verify that the
+IUT has converted the message correctly according:
+EUR Doc 047
+Appendix A
+
+45
+
+06/05/2025
+
+AMHS/SWIM Gateway Testing Plan
+
+•
+•
+
+•
+
+•
+
+AST PG
+
+amhs_ats_ohi shall be conveyed as the value of the
+originators-reference of the IPM heading.
+amhs_ats_ft shall be conveyed as the value of the element
+Authorization-time if the message contains IHE and converted
+to format: DDhhmm.
+amhs_ats_pri shall be mapped into one of the authorized
+values of the precedence element of the recipient extensions of
+the recipient-specifier as specified in the Table 9 of the EUR
+Doc 047.
+the value of precedence-policy-identifier shall be 1.3.27.8.0.0
+
+ATSMHS Service Level – Content based.
+For the fourth message, the ATSMHS Service Level parameter shall
+be set to “content-based” and content-type of the AMQP message
+shall be “<application/octet-stream>”
+Check the IPM that the AMHS Test Tool receives. Verify that the
+IUT has converted the messages correctly according to the test
+“ATSMHS Service Level – Extended.”
+For the fifth message, the ATSMHS Service Level parameter shall be
+set to “content-based” and content-type of the AMQP message shall
+be “<text/plain; charset=”utf-8”>”
+Check the IPM that the AMHS Test Tool receives. Verify that the
+IUT has converted the messages correctly according to the test
+“ATSMHS Service Level – Basic.”
+ATSMHS Service Level – Recipient based
+For the sixth message, ATSMHS Service Level parameter shall be set
+to “recipient-based” and all the recipients of the converted AMHS
+message shall support the extended format.
+Check the IPM that the AMHS Test Tool receives. Verify that the
+IUT has converted the messages correctly according to the test
+“ATSMHS Service Level – Extended.”
+For the seventh message, ATSMHS Service Level parameter shall be
+set to “recipient-based” and all the recipients, except for one, of the
+converted AMHS message shall support the extended format.
+Check the IPM that the AMHS Test Tool receives. Verify that the
+IUT has converted the messages correctly according to the test
+“ATSMHS Service Level – Basic.”
+Ref Doc 047
+
+Test class
+
+EUR Doc 047
+Appendix A
+
+4.5.3.7 IPM heading fields - using extended ATSMHS service level
+4.5.3.8 precedence-policy-identifier
+4.5.3.9 ATS-Message-Header - using basic ATSMHS service
+leve3.3.3 ATSMHS Service Level
+Normal communications (N)
+
+46
+
+06/05/2025
+
+AMHS/SWIM Gateway Testing Plan
+
+AST PG
+
+CTSW104 – CONVERT INCOMING AMQP MESSAGES WITH DIFFERENT PRIORITIES TO AMHS
+
+CTSW104
+Test criteria
+
+Scenario
+description
+
+Convert incoming AMQP messages with different priorities to
+AMHS
+This test is successful, if the IUT converts an AMQP message with
+minimal required information to an AMHS message (IPM) correctly.
+From the AMQP test interface send a sequence of nine AMQP
+messages to the IUT. The sequence of AMQP messages shall address
+a remote AMHS user and consist of ten messages, one for each
+AMQP priority, i.e., according to the Table 9 of the EUR Doc 047
+and specifying a text payload within the AMQP application data
+amqp-value.
+Check the IPMs that the AMHS Test Tool receives from the IUT via
+the AMHS transfer port. Verify that the IUT has converted the
+priority of the messages correctly according to Table 9 of the EUR
+Doc 047.
+From the AMQP test interface send a sequence of five AMQP
+messages to the IUT. The sequence of AMQP messages shall address
+a remote AMHS user and consist of five messages, containing default
+AMQP priority (4), and one of each of the possible values of the
+AMQP application property amhs_ats_pri (SS,DD,FF,GG,KK).
+Check the IPMs that the AMHS Test Tool receives from the IUT via
+the AMHS transfer port. Verify that the IUT has converted messages
+priority correctly according to Table 9 of the EUR Doc 047.
+From the AMQP test interface send a sequence of four AMQP
+messages to the IUT. The sequence of AMQP messages shall address
+a remote AMHS user and consist of four messages, containing AMQP
+priority 1, and one of each of the possible values of the AMQP
+application property amhs_ats_pri (SS,DD,FF,GG).
+From the AMQP test interface send an AMQP message to the IUT.
+The AMQP message shall address a remote AMHS user and consist
+of one message, containing default AMQP priority 9 and AMQP
+application property amhs_ats_pri with value KK.
+Check the IPMs that the AMHS Test Tool receives from the IUT via
+the AMHS transfer port. Verify that the IUT has considered that
+AMQP application property amhs_ats_pri takes precedence over
+AMQP priority value. That is, verify that the IUT has converted
+AMQP application property amhs_ats_pri according to Table 9 of the
+EUR Doc 047.
+
+Ref Doc 047
+Test class
+
+EUR Doc 047
+Appendix A
+
+4.5.2.2 amhs_ats_pri
+Table 9. Mapping of AMQP priority
+Normal communications (N)
+
+47
+
+06/05/2025
+
+AMHS/SWIM Gateway Testing Plan
+
+AST PG
+
+CTSW105 – CONVERT INCOMING AMHS AWARE AMQP MESSAGES CONTAINING FILING TIME TO
+AMHS
+
+CTSW105
+Test criteria
+
+Scenario
+description
+
+Convert incoming AMHS aware AMQP messages containing
+filing time to AMHS
+This test is successful, if the IUT converts an AMQP message with
+minimal required information to an AMHS message (IPM) correctly.
+From the AMQP test interface send a sequence of AMQP messages to
+the IUT. The sequence of AMQP messages shall address a remote
+AMHS user and consist of:
+•
+•
+
+The 1st AMQP message shall have empty amhs_ats_ft
+application property.
+The 2nd AMQP message shall have “250102” as amhs_ats_ft
+application property.
+
+Check the IPMs that the AMHS Test Tool receives from the IUT via
+the AMHS transfer port. Verify that:
+• For the first message, the filing time corresponding to the
+creation time of the AMQP message is correctly inserted and
+converted to DDhhmm format in the ATS-message-header or
+in the Authorization-time depending on “ATSMHS Service
+Level” parameter, as specified in EUR Doc 047 – 4.5.2.10.1.b
+• For the second message, the filing time from amhs_ats_ft
+application property shall be conveyed as the value of the
+ATS-message-Filing-Time in the ATS-message-header or in
+the Authorization-time depending on “ATSMHS Service
+Level” parameter as specified in EUR Doc 047 – 4.5.2.10.1.b
+Ref Doc 047
+Test class
+
+EUR Doc 047
+Appendix A
+
+4.5.2.10 ATS-message-Filing-Time
+Normal communications (N)
+
+48
+
+06/05/2025
+
+AMHS/SWIM Gateway Testing Plan
+
+AST PG
+
+CTSW106 – CONVERT AN AMHS AWARE AMQP MESSAGE CONTAINING OPTIONAL HEADING
+INFORMATION
+
+CTSW106
+Test criteria
+
+Scenario
+description
+
+Convert an AMHS aware AMQP message containing optional
+heading information
+This test is successful, if the IUT converts an AMQP message
+containing optional heading information (OHI) correctly into an
+AMHS message (IPM).
+From the AMQP test interface send a sequence of AMQP messages
+to the IUT. The sequence of AMQP messages shall address a remote
+AMHS user and consist of:
+•
+•
+•
+•
+•
+•
+
+The 1st AMQP message shall have “4” as priority and contain
+amhs_ats_ohi text of less than 53 characters.
+The 2nd AMQP message shall have “4” as priority and
+contain amhs_ats_ohi text of exactly 53 characters.
+The 3rd AMQP message shall have “4” as priority and
+contain amhs_ats_ohi text of more than 53 characters.
+The 4th AMQP message shall have “6” as priority and contain
+amhs_ats_ohi text of less than 48 characters.
+The 5th AMQP message shall have “6” as priority and contain
+amhs_ats_ohi text of exactly 48 characters.
+The 6th AMQP message shall have “6” as priority and contain
+amhs_ats_ohi text of more than 48 characters.
+
+Verify that the IUT has converted the messages correctly to extended
+AMHS messages with appropriate originators-reference element.
+Check that for the 3rd and 6th messages, amhs_ats_ohi text of AMHS
+message has been trimmed down, to 53 for the case of the 3rd
+message and to 48 for the 6th message.
+Optionally, if Basic ATSMHS service level is implemented by the
+IUT, then repeat this sequence forcing the generation of ATSMessage-Header and verifying that the IUT has conveyed appropriate
+value of amhs_ats_ohi text to the ATS-Message-Header.
+
+Ref Doc 047
+Test class
+
+EUR Doc 047
+Appendix A
+
+4.5.2.11 amhs_ats_ohi
+Normal communications (N)
+
+49
+
+06/05/2025
+
+AMHS/SWIM Gateway Testing Plan
+
+AST PG
+
+CTSW107 – CONVERT AN AMQP MESSAGE CONTAINING SUBJECT
+
+CTSW107
+Test criteria
+Scenario
+description
+
+Convert an AMQP message containing subject
+This test is successful, if the IUT converts an AMQP message subject
+correctly into an AMHS message (IPM).
+From the AMQP test interface send a sequence of AMQP messages
+to the IUT. The sequence of AMQP messages shall address a remote
+AMHS user and consist of:
+•
+•
+•
+•
+
+The 1st AMQP message shall include the AMQP subject
+property with size value exceeding 128 characters and empty
+AMQP amhs_subject application property
+The 2nd AMQP message shall include the AMQP subject
+property and empty AMQP amhs_subject application
+property.
+The 3rd AMQP message shall have empty AMQP subject
+property and “Subject example” as AMQP amhs_subject
+application property.
+The 4th AMQP message shall have “subject from properties”
+as AMQP subject property and “subject from application
+property field” as AMQP amhs_subject application property.
+
+Verify that the IUT has converted the messages correctly.
+Check that for the 1st AMHS message the property subject was
+trimmed to 128 characters and mapped to the IPM element subject.
+Check that for the 2nd AMHS message the property subject was
+mapped to the IPM element subject.
+Check that for 3rd and 4th message, the application property
+amhs_subject was mapped to the IPM element subject.
+Ref Doc 047
+Test class
+
+EUR Doc 047
+Appendix A
+
+4.5.2.3 amhs_subject
+Normal communications (N)
+
+50
+
+06/05/2025
+
+AMHS/SWIM Gateway Testing Plan
+
+AST PG
+
+CTSW108 – INCOMING AMQP MESSAGE WITH KNOWN ORIGINATOR INDICATOR
+
+CTSW108
+Test criteria
+Scenario
+description
+
+Incoming AMQP message with known originator indicator
+This test is successful, if the IUT correctly converts an AMQP
+message containing a known originator into an AMHS message
+(IPM).
+From the AMQP test interface send an AMQP message to the IUT.
+The AMQP message shall contain an originator indicator with an 8
+letters address which is known in the IUT and that can be converted.
+Check the IPM that the AMHS Test Tool receives. Verify that the
+IUT has converted the message correctly accordingly:
+
+Ref Doc 047
+
+Test class
+
+EUR Doc 047
+Appendix A
+
+•
+
+amhs_originator shall be converted into a MF-address
+following conversion of AFTN/AMHS addresses.
+
+•
+
+Also, it shall be conveyed as the value of the originator in
+this-IPM element of the IPM heading field and as the
+originator-name in the envelope of the AMHS message.
+
+4.5.2.12 a) amhs_originator
+4.5.3.2 originator heading field
+4.5.3.5 formal-name
+4.5.3.6 element user in this-IPM heading field
+4.5.4.6 originator-name
+Normal communications (N)
+
+51
+
+06/05/2025
+
+AMHS/SWIM Gateway Testing Plan
+
+AST PG
+
+CTSW109 – INCOMING AMQP MESSAGE WITH UNKNOWN ORIGINATOR INDICATOR
+
+CTSW109
+Test criteria
+
+Scenario
+description
+
+Incoming AMQP message with unknown originator indicator
+This test is successful, if the IUT logs and reports the AMQP
+message to the Control Position, if during the conversion process the
+translation of the originator indicator fails. In this case, the default
+originator shall be used.
+From the AMQP test interface send an AMQP message to the IUT.
+The AMQP message shall contain an originator indicator which is
+unknown in the IUT and therefore it cannot be converted.
+Verify that the IUT converts and sends the message to the AMHS
+Test Tool using the default originator specified in the AMHS/SWIM
+Gateway’s configuration parameters.
+Check that this situation has been logged and reported to the Control
+Position.
+
+Ref Doc 047
+Test class
+
+EUR Doc 047
+Appendix A
+
+4.5.2.12 amhs_originator (default originator)
+Normal communications (N)
+
+52
+
+06/05/2025
+
+AMHS/SWIM Gateway Testing Plan
+
+AST PG
+
+CTSW110 – REJECT AN AMQP MESSAGE WITH UNSUPPORTED CONTENT-TYPE
+
+CTSW110
+Test criteria
+
+Scenario
+description
+
+Reject an AMQP message with unsupported content-type
+This test is successful, if the IUT’s gateway component rejects an
+incoming message if it does not meet with the following assertions:
+• content-type contains the value “<application/octetstream>”, the data element is present, and the amqp-value
+element is not present.
+• content-type contains the value “<text/plain; charset=”utf8”>”, the amqp-value element is present, and the data
+element is not present
+From the AMQP test interface send a sequence of messages to the
+IUT addressed to an AMHS user recipient.
+The messages shall have different values for the content-type:
+•
+•
+•
+•
+•
+•
+
+The 1st message shall contain a content-type value
+“<application/octet-stream>”, while amqp-value and data
+shall be empty.
+The 2nd message shall contain a content-type value
+“<text/plain; charset=”utf-8”>”, amqp-value shall be
+empty, and data shall contain binary data.
+The 3rd message shall contain a content-type value
+“<application/octet-stream>”, amqp-value shall be empty,
+and data shall contain binary data.
+The 4th message shall contain a content-type value
+“<text/plain; charset=”utf-8”>”, amqp-value shall be
+present and data shall be empty.
+Optionally, the 5th message shall contain a content-type
+value “<text/plain; charset=”utf-16”>”
+Optionally, the 6th message shall contain a content-type
+value “<text/plain; charset=”utf-8”>”, amqp-value shall
+be present and data shall contain binary data.
+
+Verify that the IUT accepts and converts the 3rd and 4th messages,
+but rejects 1st, 2nd, 5th and 6th messages.
+Check that this situation has been logged and reported to Control
+Position.
+Ref Doc 047
+Test class
+
+EUR Doc 047
+Appendix A
+
+4.5.1.6 content-type
+Erroneous AMQP messages (E1)
+
+53
+
+06/05/2025
+
+AMHS/SWIM Gateway Testing Plan
+
+AST PG
+
+CTSW111 – CHECK IF THE SIZE IN BYTES OF THE PAYLOAD OF AN AMQP MESSAGE EXCEEDS
+THE MAXIMUM CONFIGURED
+
+CTSW111
+Test criteria
+
+Scenario
+description
+
+Check if the size in bytes of the payload of an AMQP
+message exceeds the maximum configured
+This test is successful, if the IUT rejects a received AMQP message
+if the size of the payload in bytes of the message exceeds the
+maximum value specified in the AMHS/SWIM Gateway’s
+configuration parameter “Maximum message data size.”
+From the AMQP test interface send three AMQP messages to the
+IUT transfer port. The messages shall address an AMHS user.
+a) Send one AMQP message, the size of the amqp-value shall
+not exceed the maximum value configured.
+b) Send one more AMQP message, the size of the payload in
+bytes for data shall not exceed the maximum value
+configured.
+Verify that these two messages are received at the AMHS test
+interface.
+c) Send one AMQP message, the size of the amqp-value shall
+exceed the maximum value configured.
+d) Send one more AMQP message, the size of the payload in
+bytes for data shall exceed the maximum value configured.
+Verify that for the last two messages the IUT does not convert the
+AMQP messages into AMHS format, but rejects the messages, logs,
+and reports the situation to the Control Position.
+
+Ref Doc 047
+Test class
+
+EUR Doc 047
+Appendix A
+
+4.5.1.7 Maximum message data size
+Procedural errors (E2)
+Normal communications (N)
+
+54
+
+06/05/2025
+
+AMHS/SWIM Gateway Testing Plan
+
+AST PG
+
+CTSW112 – CHECK IF AN AMQP MESSAGE ADDRESSES MORE AMHS USERS THAN THE
+MAXIMUM CONFIGURED
+
+CTSW112
+Test criteria
+
+Scenario
+description
+
+Check if an AMQP message addresses more AMHS users than
+the maximum configured
+This test is successful, if the IUT rejects a received AMQP message
+addressing a number of message recipients, which the ITCU is
+responsible for conveyance, that exceeds the maximum value defined
+in the AMHS/SWIM Gateway’s configuration parameter “Maximum
+message number of recipients.”
+From the AMQP test interface send two AMQP messages to the IUT.
+a) Send one AMQP message with 512 AMHS recipients. The
+“Maximum message number of recipients” parameter is set to
+512.
+Verify that this message is received at the AMHS test interface.
+b) Send one more AMQP message with 513 recipients. The
+“Maximum message number of recipients” parameter is set to
+512.
+
+Ref Doc 047
+Test class
+
+EUR Doc 047
+Appendix A
+
+Verify that the IUT does not convert the AMQP message into AMHS
+format, but rejects the message, logs, and reports the situation to the
+Control Position.
+4.5.1.8 Maximum message number of recipients
+Procedural errors (E2)
+Normal communications (N)
+
+55
+
+06/05/2025
+
+AMHS/SWIM Gateway Testing Plan
+
+AST PG
+
+CTSW113 – INCOMING RECEIPT AND NON-RECEIPT NOTIFICATIONS (RN AND NRN)
+
+CTSW113
+Test criteria
+Scenario
+description
+
+Incoming receipt and non-receipt notification (RN and NRN)
+This test is successful, if the IUT reports to its control position and
+stores the message, if it receives an IPN containing a NRN or RN
+addressed to an AMQP consumer.
+From the AMQP test interface send two AMQP messages with
+priority “6” to the IUT. These messages shall address an AMQP
+consumer and be converted by the IUT into AMHS format and sent
+to the AMHS Test Tool.
+Remove Message 1 from the AMHS Test Tool
+For the first one, upon reception of the AMHS message, the AMHS
+Test Tool returns an NRN.
+Verify that the IUT behaves as specified in section 4.4.7.3 of EUR
+Doc 047, i.e.:
+• logs the situation and reports to Control Position, and
+• stores the message for appropriate processing at the Control
+Position.
+For the second one, upon reception of the AMHS message the AMHS
+Test Tool returns a RN.
+Check the element notification-requests in the AMHS message. The
+values “RN” and “NRN” shall be taken simultaneously by this
+element.
+Verify that the IUT behaves the same way as mentioned before and:
+• logs the situation and reports to Control Position, and
+• stores the message for appropriate processing at the Control
+Position.
+
+Ref Doc 047
+Test class
+
+EUR Doc 047
+Appendix A
+
+4.5.3.4 Values of notification-request element: “rn” and “nrn”
+4.4.7.3 RN valid
+Normal communications (N)
+
+56
+
+06/05/2025
+
+AMHS/SWIM Gateway Testing Plan
+
+AST PG
+
+CTSW114 – INCOMING NON-DELIVERY REPORTS (NDR)
+
+CTSW114
+Test criteria
+Scenario
+description
+
+Incoming non-delivery reports (l)
+This test is successful, if the IUT logs and reports to its control
+position, if it receives an NDR.
+From the AMQP test interface send an AMQP message to the IUT.
+The message shall address an AMHS user and be converted by the IUT
+into AMHS format.
+This message shall be queued in the AMHS Test Tool. After being
+queued, it shall be deleted(sending report to originator).
+Verify that an NDR is received by the IUT with the following
+elements:
+• “unable-to-transfer” for the non-delivery-reason-code,
+• empty field for the non-delivery-diagnostic-code ,
+Check that the IUT logs and reports the situation to the Control
+Position.
+
+Ref Doc 047
+Test class
+
+EUR Doc 047
+Appendix A
+
+4.4.1.3 Report reception
+Normal communications (N)
+
+57
+
+06/05/2025
+
+AMHS/SWIM Gateway Testing Plan
+
+AST PG
+
+CTSW115 – INCOMING AMQP MESSAGES WITH AMQP-VALUE AND DIFFERENT
+AMHS_BODYPART_TYPE AND AMHS_CONTENT_ENCODING VALUES
+
+CTSW115
+
+Incoming AMQP text messages with amqp-value and different
+amhs_bodypart_type and amhs_content_encoding values
+
+Test criteria
+
+This test is successful, if the IUT’s gateway component converts
+received AMQP amqp-value and messages with different
+amhs_bodypart_type and amhs_content_encoding values to AMHS
+messages (IPM) with appropriate body-part type and encoding.
+From the SWIM Test Tool send a sequence of AMQP messages
+(IPMs) to the IUT addressed to an AMHS user reachable via the
+IUT’s gateway.
+
+Scenario
+description
+
+All messages shall contain <text/plain; charset=\”utf-8\”> content
+type and:
+•
+•
+
+•
+
+•
+
+The first AMQP message shall have for amhs_bodypart_type
+set to “ia5-text”, amhs_content_encoding set to “IA5” and
+amqp-value set to “Lorem ipsum”.
+The second AMQP message shall have for
+amhs_bodypart_type set to “ia5_text_body_part”,
+amhs_content_encoding set to “IA5” and amqp-value set to
+“Lorem ipsum i5bpt”.
+The third AMQP message shall have for
+amhs_bodypart_type set to “general-text-body-part”, amhscontent-encoding set to “ISO-646” and amqp-value set to
+“Lorem ipsum 646”.
+The fourth AMQP message shall have for
+amhs_bodypart_type set to “general-text-body-part”,
+amhs_content_encoding set to “ISO- 8859-1” and amqpvalue set to “Lorem ipsum 8859”.
+
+Check messages received at the AMHS interface. Check the correct
+format of the AMHS messages according to the Table 10 of EUR
+Doc 047.
+Verify that the ATS-message-text of the AMHS messages is equal to
+the text set in the amqp-value for each message.
+
+Ref Doc 047
+
+Test class
+
+EUR Doc 047
+Appendix A
+
+Verify that the original-encoded-information-types element is
+generated as detailed in section 4.5.4.7 of EUR Doc 047.
+4.5.2.4 amhs_bodypart_type and amhs_content_encoding
+4.5.2.5 amhs_bodypart_type
+4.5.2.14 a) amqp-value
+4.5.4.7 original-encoded-information-types
+Table 10. Mapping of AMQP Message (AMHS aware)
+Table 11. Mapping of AMQP Message (AMHS unaware)
+Erroneous AMQP messages (E1)
+
+58
+
+06/05/2025
+
+AMHS/SWIM Gateway Testing Plan
+
+AST PG
+
+CTSW116 – INCOMING AMQP BINARY MESSAGE WITH FTBP ATTRIBUTES
+
+CTSW116
+Test criteria
+Scenario
+description
+
+Incoming AMQP binary message with FTBP attributes
+This test is successful, if the IUT’s gateway component converts a
+received AMQP binary message to an AMHS message (IPM) with a
+FTBP and appropriate attributes.
+From the SWIM Test Tool send a sequence of AMQP messages
+(IPMs) to the IUT addressed to an AMHS user reachable via the
+IUT’s gateway.
+•
+
+•
+
+The first message shall contain <application/octet-stream>
+content-type and an empty amqp-value. Also, data element
+shall contain a binary file and the application properties
+amhs_ftbp_file_name, amhs_ftbp_object_size and
+amhs_ftbp_last_mod.
+The second message shall contain the same elements, and
+additionally the application property swim_compression shall
+contain value “gzip”. In this case, the binary payload shall be
+a compressed content.
+
+Check the messages received at AMHS interface. Check the correct
+format of the AMHS message, which shall contain a file-transferbody-part.
+Verify that AMHS properties related to FTBP are correct:
+•
+•
+•
+
+incomplete-pathname element of the file transfer parameters
+of the AMHS message shall be conveyed using
+amhs_ftbp_file_name element of AMQP message.
+actual-values element of the IPM file transfer parameters of
+the AMHS message shall be conveyed using
+amhs_ftbp_object_size element of AMQP message.
+date-and-time-of-last-modification element of the IPM file
+transfer parameters of the AMHS message shall be conveyed
+using amhs_ftbp_last_mod element of AMQP message if
+present.
+
+In the second message, verify that the payload has been
+uncompressed.
+
+Ref Doc 047
+
+Test class
+
+EUR Doc 047
+Appendix A
+
+Verify that the ATS-message-text element is not present in the
+generated AMHS messages (4.5.2.14 b)
+4.5.2.6 amhs_ftbp_file_name
+4.5.2.7 amhs_ftbp_object_size
+4.5.2.8 amhs_ftbp_last_mod
+4.5.2.13 data
+4.5.2.14 b) amqp-value
+Normal communications (N)
+
+59
+
+06/05/2025
+
+

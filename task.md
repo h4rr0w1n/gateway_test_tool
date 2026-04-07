@@ -1,26 +1,17 @@
 # AMHS-SWIM Gateway Test Tool Development Tasks
 
-- [ ] 1. Project Initialization & Setup
-  - [ ] Initialize frontend application (UI with 1-click execution per domain)
-  - [ ] Initialize backend application and RESTful API structures
-- [ ] 2. Core Framework Development
-  - [ ] Implement Test Execution Engine
-  - [ ] Implement Report Generation Module
-- [ ] 3. Domain Implementations (AMHS → AMQP)
-  - [ ] Domain A: Normal Message Conversion
-  - [ ] Domain B: Report Generation for Successful Delivery
-  - [ ] Domain C: NDR Generation on Rejection (includes verification `***` cases)
-  - [ ] Domain D: Body Part Type and Encoding Validation (includes verification `***` cases)
-  - [ ] Domain E: Probe Handling
+- [x] 1. Project Initialization & Setup
+  - [x] Initialize frontend application (UI with 1-click execution per domain)
+  - [x] Initialize backend application and RESTful API structures
+- [x] 2. Core Framework Development
+  - [x] Implement Test Execution Engine
+  - [x] Implement Report Generation Module
   - [ ] Domain F: Receipt Notification and RN Handling
-- [ ] 4. Domain Implementations (AMQP → AMHS)
-  - [ ] Domain G: Normal Message Conversion
-  - [ ] Domain H: Rejection and Validation (includes verification `***` cases)
-  - [ ] Domain I: Body Part Type and Encoding (includes verification `***` cases)
-  - [ ] Domain J: Incoming Reports and Notifications
-- [ ] 5. Integration & Configuration
-  - [ ] Implement Control Position simulation/verification logic
-  - [ ] Configure Test Parameters (Max sizes, Service Levels, etc.)
-- [ ] 6. Final Review & Testing
+- [x] 3. Domain Implementations (AMQP → AMHS)
+  - [x] Domain G: Normal Message Conversion
+  - [x] Domain H: Rejection and Validation (includes verification `***` cases)
+  - [x] Domain I: Body Part Type and Encoding (includes verification `***` cases)
+  - [x] Domain J: Incoming Reports and Notifications
+- [ ] 4. Final Review & Testing
   - [ ] Penetration Testing payload preparation for `***` marked cases
   - [ ] End-to-end dry run 

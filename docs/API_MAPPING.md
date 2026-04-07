@@ -34,16 +34,22 @@ Sử dụng Apache Qpid Proton-J cho AMQP 1.0 standard (không dùng Solace prop
 
 | Property Key | Symbol | Kiểu dữ liệu | Mô tả |
 | :--- | :--- | :--- | :--- |
-| amhs_ats_pri | `AMHS_ATS_PRI` | String | ATS Priority: SS/DD/FF/GG/KK |
-| amhs_recipients | `AMHS_RECIPIENTS` | String | Danh sách recipients (AFTN/O/R addresses) |
-| amhs_bodypart_type | `AMHS_BODY_PART_TYPE` | String | ia5-text, utf8-text, etc. |
-| amhs_content_type | `AMHS_CONTENT_TYPE` | String | Content type identifier |
-| amhs_originator | `AMHS_ORIGINATOR` | String | Originator address |
-| amhs_subject | `AMHS_SUBJECT` | String | Message subject |
-| amhs_message_id | `AMHS_MESSAGE_ID` | String | Unique message identifier |
-| amhs_filing_time | `AMHS_FILING_TIME` | String | Filing time timestamp |
-| amhs_dl_history | `AMHS_DL_HISTORY` | String | Distribution list history |
-| amhs_sec_envelope | `AMHS_SEC_ENVELOPE` | Binary | Security envelope (signed messages) |
+| amhs_ats_pri | `AMHS_ATS_PRI` | String | ATS Priority: SS/DD/FF/GG/KK. |
+| amhs_recipients | `AMHS_RECIPIENTS` | String | Danh sách recipients (AFTN/O/R addresses), phân tách bằng dấu phẩy. |
+| amhs_bodypart_type | `AMHS_BODY_PART_TYPE` | String | Kiểu body part: ia5-text, utf8-text, general-text-body-part, etc. |
+| amhs_content_type | `AMHS_CONTENT_TYPE` | String | Content type identifier (ví dụ: text/plain; charset=utf-8). |
+| amhs_originator | `AMHS_ORIGINATOR` | String | Địa chỉ người gửi (Originator address). |
+| amhs_subject | `AMHS_SUBJECT` | String | Chủ đề tin nhắn (Message subject). |
+| amhs_message_id | `AMHS_MESSAGE_ID` | String | Unique message identifier. |
+| amhs_filing_time | `AMHS_FILING_TIME` | String | Filing time timestamp (YYMMDDhhmm). |
+| amhs_ats_ohi | `AMHS_ATS_OHI` | String | Originator-Handled-Identifier (Truncated 48/53 bytes). |
+| amhs_notification_request | - | String | Yêu cầu thông báo: rn, nrn. |
+| amhs_content_encoding | - | String | Encoding cho body part: IA5, ISO-8859-1, ISO-646. |
+| amhs_ftbp_file_name | - | String | Tên file cho File Transfer Body Part (FTBP). |
+| amhs_ftbp_object_size | - | String | Kích thước đối tượng FTBP. |
+| swim_compression | - | String | Kiểu nén dữ liệu: gzip. |
+| amhs_dl_history | `AMHS_DL_HISTORY` | String | Lịch sử danh sách phân phối (Distribution list history). |
+| amhs_sec_envelope | `AMHS_SEC_ENVELOPE` | Binary | Security envelope cho tin nhắn có chữ ký. |
 
 ### 2.3 REST API Authentication & Service Discovery
 Sử dụng Java HttpURLConnection cho REST calls.

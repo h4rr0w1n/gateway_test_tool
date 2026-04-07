@@ -8,24 +8,24 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.List;
+import java.util.Map;
 
 /**
- * Giao diện chính của công cụ kiểm thử.
- * Hiển thị danh sách các test case và nút thực thi.
+ * Main Graphical User Interface for the AMHS/SWIM Gateway Test Tool.
+ * Provides access to configured test cases and a real-time execution log.
  */
 public class TestFrame extends JFrame {
     private JTextArea logArea;
-    private AmhsToSwimTests amhsToSwimTests;
     private SwimToAmhsTests swimToAmhsTests;
 
     public TestFrame() {
         super("AMHS/SWIM Gateway Test Tool v1.0");
-        amhsToSwimTests = new AmhsToSwimTests();
         swimToAmhsTests = new SwimToAmhsTests();
         
         initComponents();
         
-        // Connect GUI log area to the central Logger
+        // Connect GUI log area to the central Logger for real-time reporting
         Logger.setLogListener(msg -> {
             SwingUtilities.invokeLater(() -> {
                 logArea.append(msg + "\n");
@@ -40,84 +40,47 @@ public class TestFrame extends JFrame {
 
     private void initComponents() {
         JPanel mainPanel = new JPanel(new BorderLayout());
-        
         JTabbedPane tabbedPane = new JTabbedPane();
         
-        // --- Tab: AMHS to SWIM ---
-        JPanel amhsToSwimPanel = new JPanel(new BorderLayout());
-        JPanel amhsButtons = new JPanel(new GridLayout(0, 2, 5, 5));
-        
-        addTestButton(amhsButtons, "CTSW001 (IPM to AMQP)", () -> runTest(amhsToSwimTests.CTSW001));
-        addTestButton(amhsButtons, "CTSW002 (Multi Recipients)", () -> runTest(amhsToSwimTests.CTSW002));
-        addTestButton(amhsButtons, "CTSW003 (DR Success)", () -> runTest(amhsToSwimTests.CTSW003));
-        addTestButton(amhsButtons, "CTSW004 (NDR Syntax Error)", () -> runTest(amhsToSwimTests.CTSW004));
-        addTestButton(amhsButtons, "CTSW005 (DR Exceed)", () -> runTest(amhsToSwimTests.CTSW005));
-        addTestButton(amhsButtons, "CTSW006 (Max Size)", () -> runTest(amhsToSwimTests.CTSW006));
-        addTestButton(amhsButtons, "CTSW007 (Multi Body Part)", () -> runTest(amhsToSwimTests.CTSW007));
-        addTestButton(amhsButtons, "CTSW008 (Unsupported Type)", () -> runTest(amhsToSwimTests.CTSW008));
-        addTestButton(amhsButtons, "CTSW009 (Optional Fields)", () -> runTest(amhsToSwimTests.CTSW009));
-        addTestButton(amhsButtons, "CTSW010 (Excessive Recip)", () -> runTest(amhsToSwimTests.CTSW010));
-        addTestButton(amhsButtons, "CTSW011 (Probe to AMQP)", () -> runTest(amhsToSwimTests.CTSW011));
-        addTestButton(amhsButtons, "CTSW012 (Probe Resp OK)", () -> runTest(amhsToSwimTests.CTSW012));
-        addTestButton(amhsButtons, "CTSW013 (Probe Resp Fail)", () -> runTest(amhsToSwimTests.CTSW013));
-        addTestButton(amhsButtons, "CTSW014 (RN to AMQP)", () -> runTest(amhsToSwimTests.CTSW014));
-        addTestButton(amhsButtons, "CTSW015 (RN Request)", () -> runTest(amhsToSwimTests.CTSW015));
-        addTestButton(amhsButtons, "CTSW016 (Current EIT)", () -> runTest(amhsToSwimTests.CTSW016));
-        addTestButton(amhsButtons, "CTSW017 (IA5 Body Part)", () -> runTest(amhsToSwimTests.CTSW017));
-        addTestButton(amhsButtons, "CTSW018 (ISO 646)", () -> runTest(amhsToSwimTests.CTSW018));
-        addTestButton(amhsButtons, "CTSW019 (Non-ISO 646)", () -> runTest(amhsToSwimTests.CTSW019));
-        addTestButton(amhsButtons, "CTSW020 (SEC Envelope)", () -> runTest(amhsToSwimTests.CTSW020));
-        
-        JScrollPane amhsScroll = new JScrollPane(amhsButtons);
-        amhsToSwimPanel.add(amhsScroll, BorderLayout.CENTER);
-        tabbedPane.addTab("AMHS to SWIM (20)", amhsToSwimPanel);
-        
-        // --- Tab: SWIM to AMHS ---
+        // --- Tab: SWIM to AMHS Injection ---
         JPanel swimToAmhsPanel = new JPanel(new BorderLayout());
         JPanel swimButtons = new JPanel(new GridLayout(0, 2, 5, 5));
         
-        addTestButton(swimButtons, "CTSW101 (AMQP to AMHS)", () -> runTest(swimToAmhsTests.CTSW101));
-        addTestButton(swimButtons, "CTSW102 (Missing Info)", () -> runTest(swimToAmhsTests.CTSW102));
-        addTestButton(swimButtons, "CTSW103 (Explicit Pri)", () -> runTest(swimToAmhsTests.CTSW103));
-        addTestButton(swimButtons, "CTSW104 (Multi Recip)", () -> runTest(swimToAmhsTests.CTSW104));
-        addTestButton(swimButtons, "CTSW105 (Filing Time)", () -> runTest(swimToAmhsTests.CTSW105));
-        addTestButton(swimButtons, "CTSW106 (Message ID)", () -> runTest(swimToAmhsTests.CTSW106));
-        addTestButton(swimButtons, "CTSW107 (Originator)", () -> runTest(swimToAmhsTests.CTSW107));
-        addTestButton(swimButtons, "CTSW108 (Subject)", () -> runTest(swimToAmhsTests.CTSW108));
-        addTestButton(swimButtons, "CTSW109 (Optional Prop)", () -> runTest(swimToAmhsTests.CTSW109));
-        addTestButton(swimButtons, "CTSW110 (Invalid Type)", () -> runTest(swimToAmhsTests.CTSW110));
-        addTestButton(swimButtons, "CTSW111 (Max Payload)", () -> runTest(swimToAmhsTests.CTSW111));
-        addTestButton(swimButtons, "CTSW112 (Max Recipients)", () -> runTest(swimToAmhsTests.CTSW112));
-        addTestButton(swimButtons, "CTSW113 (DR to AMHS)", () -> runTest(swimToAmhsTests.CTSW113));
-        addTestButton(swimButtons, "CTSW114 (NDR to AMHS)", () -> runTest(swimToAmhsTests.CTSW114));
-        addTestButton(swimButtons, "CTSW115 (Body Part Typ)", () -> runTest(swimToAmhsTests.CTSW115));
-        addTestButton(swimButtons, "CTSW116 (FTBP Binary)", () -> runTest(swimToAmhsTests.CTSW116));
+        addTestButton(swimButtons, "CTSW101 (Basic Conv)", swimToAmhsTests.CTSW101);
+        addTestButton(swimButtons, "CTSW102 (Missing Info)", swimToAmhsTests.CTSW102);
+        addTestButton(swimButtons, "CTSW103 (Service Level)", swimToAmhsTests.CTSW103);
+        addTestButton(swimButtons, "CTSW104 (Pri Mapping)", swimToAmhsTests.CTSW104);
+        addTestButton(swimButtons, "CTSW105 (Filing Time)", swimToAmhsTests.CTSW105);
+        addTestButton(swimButtons, "CTSW106 (OHI Mapping)", swimToAmhsTests.CTSW106);
+        addTestButton(swimButtons, "CTSW107 (Subject Mapping)", swimToAmhsTests.CTSW107);
+        addTestButton(swimButtons, "CTSW108 (Known Origin)", swimToAmhsTests.CTSW108);
+        addTestButton(swimButtons, "CTSW109 (Unknown Origin)", swimToAmhsTests.CTSW109);
+        addTestButton(swimButtons, "CTSW110 (Content-Type)", swimToAmhsTests.CTSW110);
+        addTestButton(swimButtons, "CTSW111 (Max Payload)", swimToAmhsTests.CTSW111);
+        addTestButton(swimButtons, "CTSW112 (Recip Limit)", swimToAmhsTests.CTSW112);
+        addTestButton(swimButtons, "CTSW113 (RN/NRN Req)", swimToAmhsTests.CTSW113);
+        addTestButton(swimButtons, "CTSW114 (NDR Forwarding)", swimToAmhsTests.CTSW114);
+        addTestButton(swimButtons, "CTSW115 (Encoding/Body)", swimToAmhsTests.CTSW115);
+        addTestButton(swimButtons, "CTSW116 (FTBP/GZIP)", swimToAmhsTests.CTSW116);
         
         JScrollPane swimScroll = new JScrollPane(swimButtons);
         swimToAmhsPanel.add(swimScroll, BorderLayout.CENTER);
-        tabbedPane.addTab("Injection: SWIM to AMHS (16)", swimToAmhsPanel);
+        tabbedPane.addTab("Injection: SWIM to AMHS (CTSW1xx)", swimToAmhsPanel);
         
-        // --- Tab: Configuration ---
-        JPanel configPanel = new JPanel(new GridLayout(0, 1, 10, 10));
-        configPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-
-        // SWIM Adapter Selection
-        JPanel adapterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        adapterPanel.add(new JLabel("SWIM Messaging Adapter:"));
-        String[] adapters = {"Solace JCSMP (Proprietary)", "Apache Qpid (Standard AMQP 1.0)"};
-        JComboBox<String> adapterCombo = new JComboBox<>(adapters);
-        adapterPanel.add(adapterCombo);
-        configPanel.add(adapterPanel);
+        // --- Tab: Configuration Settings ---
+        JPanel configPanel = new JPanel(new GridLayout(0, 1, 5, 5));
+        configPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         // Broker Profile Selection
         JPanel profilePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         profilePanel.add(new JLabel("AMQP Broker Profile:"));
         String[] profiles = {"STANDARD", "AZURE_SERVICE_BUS", "IBM_MQ", "RABBITMQ", "SOLACE"};
         JComboBox<String> profileCombo = new JComboBox<>(profiles);
+        profileCombo.setSelectedItem(TestConfig.getInstance().getProperty("amqp_broker_profile", "STANDARD"));
         profilePanel.add(profileCombo);
         configPanel.add(profilePanel);
 
-        // Host & Port
+        // Host & Port Configuration
         JPanel hostPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         hostPanel.add(new JLabel("SWIM Broker Host:"));
         JTextField hostField = new JTextField(TestConfig.getInstance().getProperty("swim.broker.host", "localhost"), 15);
@@ -127,10 +90,33 @@ public class TestFrame extends JFrame {
         hostPanel.add(portField);
         configPanel.add(hostPanel);
 
+        // Authentication Details
+        JPanel authPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        authPanel.add(new JLabel("Username:"));
+        JTextField userField = new JTextField(TestConfig.getInstance().getProperty("swim.broker.user", "default"), 10);
+        authPanel.add(userField);
+        authPanel.add(new JLabel("Password:"));
+        JPasswordField passField = new JPasswordField(TestConfig.getInstance().getProperty("swim.broker.password", "default"), 10);
+        authPanel.add(passField);
+        authPanel.add(new JLabel("VPN:"));
+        JTextField vpnField = new JTextField(TestConfig.getInstance().getProperty("swim.broker.vpn", "default"), 10);
+        authPanel.add(vpnField);
+        configPanel.add(authPanel);
+
+        // Target Endpoints
+        JPanel targetPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        targetPanel.add(new JLabel("Target AMQP Topic:"));
+        JTextField topicField = new JTextField(TestConfig.getInstance().getProperty("gateway.default_topic", "TEST.TOPIC"), 15);
+        targetPanel.add(topicField);
+        targetPanel.add(new JLabel("Test Recipient (AMHS O/R):"));
+        JTextField recipientField = new JTextField(TestConfig.getInstance().getProperty("gateway.test_recipient", "VVTSYMYX"), 15);
+        targetPanel.add(recipientField);
+        configPanel.add(targetPanel);
+
         JButton checkConnBtn = new JButton("Check Connection");
         checkConnBtn.addActionListener(e -> {
             new Thread(() -> {
-                log("Đang kiểm tra kết nối tới " + hostField.getText() + ":" + portField.getText() + "...");
+                log("Testing connection to " + hostField.getText() + ":" + portField.getText() + "...");
                 swimToAmhsTests.getSwimDriver().testConnection();
             }).start();
         });
@@ -141,19 +127,22 @@ public class TestFrame extends JFrame {
             TestConfig config = TestConfig.getInstance();
             config.setProperty("swim.broker.host", hostField.getText());
             config.setProperty("swim.broker.port", portField.getText());
+            config.setProperty("swim.broker.user", userField.getText());
+            config.setProperty("swim.broker.password", new String(passField.getPassword()));
+            config.setProperty("swim.broker.vpn", vpnField.getText());
+            config.setProperty("gateway.default_topic", topicField.getText());
+            config.setProperty("gateway.test_recipient", recipientField.getText());
+            config.setProperty("amqp_broker_profile", (String) profileCombo.getSelectedItem());
             config.saveConfig();
             
-            // Re-initialize drivers with new config
             swimToAmhsTests = new SwimToAmhsTests();
-            amhsToSwimTests = new AmhsToSwimTests();
-            
-            log("Đã lưu và áp dụng cấu hình mới: " + hostField.getText() + ":" + portField.getText());
+            log("Configuration saved. Test cases re-initialized.");
         });
         configPanel.add(saveBtn);
 
         tabbedPane.addTab("Settings", new JScrollPane(configPanel));
         
-        // --- Execution Log ---
+        // --- Real-time Execution Log Display ---
         logArea = new JTextArea();
         logArea.setEditable(false);
         logArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
@@ -167,26 +156,43 @@ public class TestFrame extends JFrame {
         add(mainPanel);
     }
 
-    private void addTestButton(JPanel panel, String label, Runnable action) {
+    private void addTestButton(JPanel panel, String label, BaseTestCase testCase) {
         JButton btn = new JButton(label);
         btn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                action.run();
+                runTest(testCase);
             }
         });
         panel.add(btn);
     }
 
     private void runTest(BaseTestCase testCase) {
-        // Chạy test trong thread riêng để không treo GUI
+        List<BaseTestCase.TestParameter> params = testCase.getRequiredParameters();
+        if (params != null && !params.isEmpty()) {
+            TestParamDialog dialog = new TestParamDialog(this, "Execute " + testCase.getTestCaseId(), params, userInputs -> {
+                executeTestThread(testCase, userInputs);
+            });
+            dialog.setVisible(true);
+        } else {
+            executeTestThread(testCase, null);
+        }
+    }
+
+    private void executeTestThread(BaseTestCase testCase, Map<String, String> userInputs) {
+        // Execute the test in a separate thread to keep the GUI responsive
         new Thread(() -> {
             try {
-                log("Đang thực thi injection: " + testCase.getTestCaseId());
-                boolean result = testCase.execute();
-                log("Trạng thái truyền tin: " + (result ? "THÀNH CÔNG" : "THẤT BẠI"));
+                log("Starting injection: " + testCase.getTestCaseId());
+                boolean result;
+                if (userInputs != null) {
+                    result = testCase.execute(userInputs);
+                } else {
+                    result = testCase.execute();
+                }
+                log("Injection Status: " + (result ? "SUCCESSFUL" : "FAILED"));
             } catch (Exception ex) {
-                log("Ngoại lệ: " + ex.getMessage());
+                log("Exception during injection: " + ex.getMessage());
                 ex.printStackTrace();
             }
         }).start();
@@ -196,6 +202,11 @@ public class TestFrame extends JFrame {
         SwingUtilities.invokeLater(() -> {
             logArea.append(message + "\n");
             logArea.setCaretPosition(logArea.getDocument().getLength());
+        });
+        Logger.log("GUI", message);
+    }
+}
+getLength());
         });
         Logger.log("GUI", message);
     }

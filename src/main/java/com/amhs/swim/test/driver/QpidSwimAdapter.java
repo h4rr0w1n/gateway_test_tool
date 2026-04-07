@@ -43,6 +43,7 @@ public class QpidSwimAdapter implements SwimMessagingAdapter {
     private boolean isConnected = false;
     private String authToken;
     private BlockingQueue<Message> receivedMessages;
+    private static long deliveryCounter = 0;
     
     // AMQP 1.0 Application Property Keys per EUR Doc 047
     public static final Symbol AMHS_ATS_PRI = Symbol.valueOf("amhs_ats_pri");
@@ -132,7 +133,8 @@ public class QpidSwimAdapter implements SwimMessagingAdapter {
             connect();
         }
         
-        Logger.log("INFO", "Transmitting Aviation Message to SWIM via AMQP 1.0 to: " + topic);
+        // Suppress redundant INFO if needed, or keep it short.
+        // log("DEBUG", "Adapter publishing to: " + topic);
         
         // Create AMQP 1.0 message per spec
         Message message = Proton.message();
@@ -180,8 +182,12 @@ public class QpidSwimAdapter implements SwimMessagingAdapter {
         }
         
         // Set priority (AMQP 1.0 uses 0-9, AMHS uses SS/DD/FF/GG/KK)
-        if (properties.containsKey("amhs_ats_pri")) {
+        if (properties.containsKey("amqp_priority")) {
+            message.setPriority(((Number) properties.get("amqp_priority")).shortValue());
+        } else if (properties.containsKey("amhs_ats_pri")) {
             message.setPriority(mapAmhsPriorityToAmqp((String) properties.get("amhs_ats_pri")));
+        } else {
+            message.setPriority((short) 4); // Default AMQP 1.0 priority
         }
         
         // Set application properties per EUR Doc 047
@@ -213,14 +219,19 @@ public class QpidSwimAdapter implements SwimMessagingAdapter {
         
         // Send message via AMQP 1.0 sender link
         sendAmqpMessage(message);
-        
-        Logger.log("SUCCESS", "Message published via AMQP 1.0.");
     }
     
     /**
      * Create body section based on content type.
      */
     private Section createBodySection(byte[] payload, String bodyPartType, String bodyType) {
+        if (payload == null || payload.length == 0) {
+            // Scenario for empty body sections
+            if ("AMQP_VALUE".equalsIgnoreCase(bodyType)) return new AmqpValue(null);
+            if ("AMQP_SEQUENCE".equalsIgnoreCase(bodyType)) return new org.apache.qpid.proton.amqp.messaging.AmqpSequence(new java.util.ArrayList<>());
+            return new Data(null);
+        }
+
         if ("AMQP_VALUE".equalsIgnoreCase(bodyType)) {
             if ("ia5-text".equalsIgnoreCase(bodyPartType) || "utf8-text".equalsIgnoreCase(bodyPartType)) {
                 return new AmqpValue(new String(payload, StandardCharsets.UTF_8));
@@ -285,7 +296,7 @@ public class QpidSwimAdapter implements SwimMessagingAdapter {
         buffer.flip();
         
         // Create delivery and send
-        byte[] tag = Long.toString(System.currentTimeMillis()).getBytes();
+        byte[] tag = (System.currentTimeMillis() + "-" + (deliveryCounter++)).getBytes();
         Delivery delivery = sender.delivery(tag);
         
         int encodedSize = buffer.remaining();
