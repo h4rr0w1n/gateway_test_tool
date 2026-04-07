@@ -1,74 +1,48 @@
-# AMHS/SWIM Gateway Testing Tool Implementation Plan
+# Implementation Plan: ICAO EUR Doc 047 Compliance & Enhancement
 
-## Goal Description
-Develop a comprehensive testing tool to validate the EUR Doc 047 Appendix A - AMHS/SWIM Gateway operations. The tool orchestrates AMHS-to-AMQP and AMQP-to-AMHS test scenarios. Assuming RESTful-compatible API interfaces to the target system (IUT), the tool will serve both as the AMHS Test Tool (injecting X.400/P1/P3/P7 equivalent structures via REST) and the SWIM Test Tool (exchanging AMQP properties via REST envelopes). 
+This plan outlines the steps to ensure the **AMHS/SWIM Gateway Test Tool** fully complies with the ICAO EUR Doc 047 Appendix A (Testing Plan) requirements for test cases **CTSW101 through CTSW116**. It also includes enhancements for penetration testing and protocol-level customization.
 
-Key UX/UI requirement: Test domains must be visibly separated, with 1-click execution buttons available to run entire domains. Cases involving data validation/rejection are flagged with `***` to facilitate integration of custom pentesting payloads.
+## 1. Compliance Gap Analysis (CTSW101 - CTSW116)
 
-## User Review Required
-- Please review if the UI grouping (A-J domains) and the test execution engine setup meet your expectations for the 1-click execution.
-- If you have an existing UI framework preference (e.g., Streamlit, React, Vue, PyQt), please let me know so we can scaffold that.
+Based on the audit of `SwimToAmhsTests.java` and `cases.json`, the following enhancements are needed:
 
-## Proposed Changes
+- **CTSW113 (Notifications):** Currently hardcodes `rn,nrn`. Needs a parameter to test individual notification requests (RN or NRN).
+- **CTSW115 (Encoding):** Hardcodes 3 scenarios in a loop. Needs a dynamic selector for Body Part Type and Encoding to allow manual "fuzzing" of these fields.
+- **CTSW116 (FTBP/GZIP):** Needs more parameters for the second scenario (GZIP) to allow custom compressed payloads.
+- **Penetration Testing:** The tool lacks a mechanism to inject "unexpected" AMQP application properties (fuzzing).
 
-### 1. Architecture & UI Design
-- **Frontend Interface (e.g., React/Vue or Streamlit):**
-  - **Dashboard Layout:** A clear, domain-centric view. 
-  - **1-Click Execution Buttons:** Each major domain (A through J) will have a dedicated "Run Domain Tests" button.
-  - **Visual Highlighting:** Malformed data/syntax check cases will be prominently marked `***` for pentest payload injection.
-- **Backend/Execution Engine (Python/Node.js):**
-  - **RESTful Adapter:** Converts AMHS and AMQP test instructions into REST requests.
-  - **Test Case Orchestrator:** Manages sequential/parallel execution of test cases within a domain.
-  - **Assertion & Verdict Engine:** Verifies payload conversions, HTTP response codes (mapping to DR/NDRs), and logs.
+## 2. Proposed Technical Changes
 
-### 2. Domain & Test Case Catalog
+### A. Core Messaging Layer (Penetration Testing Support)
+- **Modify `AMQPProperties` (`SwimDriver.java`):** Add a `Map<String, Object> customProperties` field.
+- **Modify `QpidSwimAdapter.java`:** Update `publishMessage` to iterate through `customProperties` and add them to the `ApplicationProperties` section. This allows injecting any key-value pair, supporting negative/penetration testing.
 
-#### Chapter 4: Gateway Operations (AMHS → AMQP)
-- **Domain A: Normal Message Conversion**
-  - CTSW001, CTSW002, CTSW009, CTSW020
-- **Domain B: Report Generation for Successful Delivery**
-  - CTSW003
-- **Domain C: NDR Generation on Rejection**
-  - CTSW004: Syntax error in ATS-message-header `***`
-  - CTSW005: Time exceeds latest delivery time
-  - CTSW006: Payload size exceeds configured maximum `***`
-  - CTSW007: Multiple body parts `***`
-  - CTSW008: Unsupported content-type `***`
-  - CTSW010: Addressing more AMQP consumers than maximum `***`
-- **Domain D: Body Part Type and Encoding Validation**
-  - CTSW016: Processing of current EIT `***`
-  - CTSW017: Incoming IPM with an ia5-text-body-part `***`
-  - CTSW018: Incoming IPM with a general-text-body-part (ISO 646)
-  - CTSW019: Incoming IPM with general-text-body-part (non-ISO 646) `***`
-- **Domain E: Probe Handling**
-  - CTSW011, CTSW012, CTSW013
-- **Domain F: Receipt Notification and RN Handling**
-  - CTSW014, CTSW015
+### B. Test Case Refinement
+- **Modify `SwimToAmhsTests.java`:**
+    - **CTSW113:** Add parameters for `Request RN` and `Request NRN`.
+    - **CTSW115:** Add dropdown-style parameters for `Body Part Type` (IA5, General-Text) and `Encoding` (ISO-8859-1, etc.).
+    - **CTSW116:** Add a parameter for `Compression Type` (None, GZIP).
 
-#### Chapter 5: Gateway Operations (AMQP → AMHS)
-- **Domain G: Normal Message Conversion**
-  - CTSW101, CTSW103, CTSW104, CTSW105, CTSW106, CTSW107, CTSW108, CTSW109
-- **Domain H: Rejection and Validation**
-  - CTSW102: Reject AMQP message missing minimum required information `***`
-  - CTSW110: Reject AMQP message with unsupported content-type `***`
-  - CTSW111: Reject AMQP message if payload size exceeds maximum `***`
-  - CTSW112: Reject AMQP message addressing more AMHS users than maximum `***`
-- **Domain I: Body Part Type and Encoding**
-  - CTSW115: amqp-value with different amhs_bodypart_type and encoding `***`
-  - CTSW116: Binary message with FTBP attributes
-- **Domain J: Incoming Reports and Notifications**
-  - CTSW113, CTSW114
+### C. GUI Enhancements
+- **Modify `TestParamDialog.java`:** Ensure it can handle dynamic key-value pairs for the new `customProperties` field if we decide to expose it globally.
 
-### 3. Preparation for Pentesting Payloads (`***`)
-For all tests flagged with `***`, the tool architecture will allow an external JSON/YAML dictionary of payloads to override the standard REST payload bodies. This encourages security testing (e.g., providing a 10MB string for CTSW006/CTSW111 or sending `\n\r` padding bytes in ATS headers for CTSW004).
+## 3. Compliance Documentation
+- **Create `docs/ICAO_COMPLIANCE_REPORT.md`:** A formal trace-ability matrix mapping ICAO requirements (Page 39-59 of Appendix A) to specific lines of code.
 
-## Verification Plan
+## 4. Verification Plan
 
-### Automated Tests
-- Mocks will be established for the AMHS and AMQP endpoints to simulate successful responses and structured error reports.
-- Component tests will execute individual module payload serialization/deserialization logic.
+### AMQP 1.0 Protocol Verification
+- Run the tool against a standard AMQP 1.0 broker (e.g., RabbitMQ).
+- Use `qpid-receive` or a similar tool to inspect the raw AMQP frames and verify:
+    - Application properties are correctly formatted.
+    - Custom properties (for penetration testing) are present.
+    - Binary payloads (GZIP) are correctly handled in the `Data` section.
 
-### Manual Verification
-- Will start by running the application locally.
-- A user dry run will visually check that all Domains and Test cases are properly rendered.
-- 1-click domain execution routines will be functionally checked against the mock endpoint adapter.
+### Functional Verification
+- Execute `CTSW113` and verify on the AMHS side that the notification flags are correctly set in the P1 envelope.
+- Execute `CTSW115` with various encodings and verify character mapping in the AMHS IPM body.
+
+---
+
+> [!IMPORTANT]
+> **User Approval Required**: Please confirm if you would like the "Custom Property" field to be available in **every** test case dialog or just as a general tool configuration. I recommend adding it to every case for maximum flexibility during penetration testing.
