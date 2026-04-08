@@ -45,13 +45,19 @@ else
 fi
 
 if [[ "$_java" ]]; then
-    version=$("$_java" -version 2>&1 | awk -F '"' '/version/ {print $2}')
+    # Improved version detection
+    version=$("$_java" -version 2>&1 | awk -F '"' '/version/ {print $2}' | sed 's/_.*//')
+    if [ -z "$version" ]; then
+        # Fallback for OpenJDK
+        version=$("$_java" -version 2>&1 | head -n 1 | cut -d' ' -f3 | tr -d '"')
+    fi
     echo -e "${GREEN}Java is already installed (Version $version).${NC}"
 else
     echo -e "${YELLOW}Java not found. Installing OpenJDK 11...${NC}"
-    # The package name varies by distro, default to openjdk-11-jdk/java-11-openjdk
     if command -v apt-get >/dev/null 2>&1; then
-        install_package "openjdk-11-jdk"
+        sudo apt-get update && sudo apt-get install -y openjdk-11-jdk
+    elif command -v dnf >/dev/null 2>&1; then
+        sudo dnf install -y java-11-openjdk-devel
     else
         install_package "java-11-openjdk-devel"
     fi
@@ -101,11 +107,12 @@ create_jar_stub() {
 echo -e "\n${CYAN}Locating Dependencies in '${LIB_DIR}'...${NC}"
 
 # 4.1 Solace JCSMP
-SOLACE_JAR="$LIB_DIR/sol-jcsmp-10.1.0.jar"
-if [ ! -s "$SOLACE_JAR" ]; then  # -s checks if file exists and has size > 0
-    echo "Downloading Solace JCSMP JAR from Maven Central..."
-    if $DOWNLOAD_CMD "$SOLACE_JAR" "https://repo1.maven.org/maven2/com/solacesystems/sol-jcsmp/10.1.0/sol-jcsmp-10.1.0.jar"; then
-        echo -e "${GREEN}Successfully downloaded 'sol-jcsmp-10.1.0.jar'.${NC}"
+SOLACE_VERSION="10.20.0"
+SOLACE_JAR="$LIB_DIR/sol-jcsmp-${SOLACE_VERSION}.jar"
+if [ ! -s "$SOLACE_JAR" ]; then
+    echo "Downloading Solace JCSMP JAR v${SOLACE_VERSION} from Maven Central..."
+    if $DOWNLOAD_CMD "$SOLACE_JAR" "https://repo1.maven.org/maven2/com/solacesystems/sol-jcsmp/${SOLACE_VERSION}/sol-jcsmp-${SOLACE_VERSION}.jar"; then
+        echo -e "${GREEN}Successfully downloaded 'sol-jcsmp-${SOLACE_VERSION}.jar'.${NC}"
     else
         echo -e "${RED}Failed to download Solace JAR. Creating stub...${NC}"
         create_jar_stub "$SOLACE_JAR" "Solace JCSMP"
@@ -167,8 +174,11 @@ fi
 echo -e "\n${YELLOW}Note: Proprietary library stubs allow compilation but lack real logic.${NC}"
 echo -e "${YELLOW}Please replace them with real files for full AMHS/X.400 functionality.${NC}"
 
-# 5. Execute the remaining installation script
-echo -e "\n${CYAN}Executing remaining installation script...${NC}"
+# 5. Fix line endings for other scripts and execute build
+echo -e "\n${CYAN}Fixing line endings for other scripts...${NC}"
+find . -name "*.sh" -not -name "install.sh" -exec sed -i 's/\r$//' {} + || true
+
+echo -e "\n${CYAN}Executing Maven build...${NC}"
 if type -p mvn >/dev/null 2>&1; then
     echo "Running Maven build..."
     mvn clean install
