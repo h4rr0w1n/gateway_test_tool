@@ -55,8 +55,8 @@ public class SwimToAmhsTests {
         public boolean execute(Map<String, String> inputs) throws Exception {
             try {
                 logTransmission(testCaseId, "Injecting 2 simple messages: one text, one binary.");
-                String testTopic = TestConfig.getInstance().getProperty("gateway.default_topic", "TEST.TOPIC");
-                String recipient = TestConfig.getInstance().getProperty("gateway.test_recipient", "VVTSYMYX");
+                String testTopic = inputs.getOrDefault("topic", TestConfig.getInstance().getProperty("gateway.default_topic", "TEST.TOPIC"));
+                String recipient = inputs.getOrDefault("recipient", TestConfig.getInstance().getProperty("gateway.test_recipient", "VVTSYMYX"));
                 
                 // 1. Text Message
                 SwimDriver.AMQPProperties props1 = new SwimDriver.AMQPProperties();
@@ -100,8 +100,8 @@ public class SwimToAmhsTests {
         public boolean execute(Map<String, String> inputs) throws Exception {
             try {
                 logTransmission(testCaseId, "Injecting 10 malformed scenarios (5 text, 5 binary).");
-                String testTopic = TestConfig.getInstance().getProperty("gateway.default_topic", "TEST.TOPIC");
-                String recipient = TestConfig.getInstance().getProperty("gateway.test_recipient", "VVTSYMYX");
+                String testTopic = inputs.getOrDefault("topic", TestConfig.getInstance().getProperty("gateway.default_topic", "TEST.TOPIC"));
+                String recipient = inputs.getOrDefault("recipient", TestConfig.getInstance().getProperty("gateway.test_recipient", "VVTSYMYX"));
                 byte[] payload = inputs.getOrDefault("payload", "Content").getBytes();
 
                 String[] contentTypes = {"text/plain; charset=utf-8", "application/octet-stream"};
@@ -184,8 +184,8 @@ public class SwimToAmhsTests {
             try {
                 String prefix = inputs.getOrDefault("p1", "CTSW103");
                 logTransmission(testCaseId, "Injecting 7 messages with varying Service Levels.");
-                String tTopic = TestConfig.getInstance().getProperty("gateway.default_topic", "TEST.TOPIC");
-                String recip = TestConfig.getInstance().getProperty("gateway.test_recipient", "VVTSYMYX");
+                String tTopic = inputs.getOrDefault("topic", TestConfig.getInstance().getProperty("gateway.default_topic", "TEST.TOPIC"));
+                String recip = inputs.getOrDefault("recipient", TestConfig.getInstance().getProperty("gateway.test_recipient", "VVTSYMYX"));
                 
                 // 1. Basic (Text)
                 SwimDriver.AMQPProperties p1 = new SwimDriver.AMQPProperties();
@@ -244,21 +244,24 @@ public class SwimToAmhsTests {
     public BaseTestCase CTSW104 = new BaseTestCase("CTSW104", "Convert AMQP with various priorities") {
         @Override
         public List<TestParameter> getRequiredParameters() {
-            return List.of(new TestParameter("p", "Dummy:", "Run", false));
+            return List.of(
+                new TestParameter("topic", "AMQP Topic:", "TEST.TOPIC", false),
+                new TestParameter("recipient", "AMHS Recipient:", "VVTSYMYX", false)
+            );
         }
 
         @Override
         public boolean execute(Map<String, String> inputs) throws Exception {
             try {
                 logTransmission(testCaseId, "Injecting 20-message priority matrix.");
-                String testTopic = TestConfig.getInstance().getProperty("gateway.default_topic", "TEST.TOPIC");
-                String recip = TestConfig.getInstance().getProperty("gateway.test_recipient", "VVTSYMYX");
+                String testTopic = inputs.getOrDefault("topic", TestConfig.getInstance().getProperty("gateway.default_topic", "TEST.TOPIC"));
+                String recip = inputs.getOrDefault("recipient", TestConfig.getInstance().getProperty("gateway.test_recipient", "VVTSYMYX"));
                 
                 int counter = 1;
                 // Group 1: priorities 0-9
                 for (int i = 0; i <= 9; i++) {
                     SwimDriver.AMQPProperties props = new SwimDriver.AMQPProperties();
-                    props.setRecipients(recip); props.setAmqpPriority((short) i);
+                    props.setRecipients(recip); props.setAmqpPriority((short) i); props.setContentType("text/plain; charset=utf-8"); props.setBodyType(SwimDriver.AMQPProperties.BodyType.AMQP_VALUE);
                     swimDriver.publishMessage(testTopic, ("P" + i).getBytes(), props);
                     logProgress(testCaseId, counter++, 20);
                 }
@@ -267,7 +270,7 @@ public class SwimToAmhsTests {
                 String[] atsPris = {"SS", "DD", "FF", "GG", "KK"};
                 for (String pri : atsPris) {
                     SwimDriver.AMQPProperties props = new SwimDriver.AMQPProperties();
-                    props.setRecipients(recip); props.setAmqpPriority((short) 4); props.setAtsPri(pri);
+                    props.setRecipients(recip); props.setAmqpPriority((short) 4); props.setAtsPri(pri); props.setContentType("text/plain; charset=utf-8"); props.setBodyType(SwimDriver.AMQPProperties.BodyType.AMQP_VALUE);
                     swimDriver.publishMessage(testTopic, ("Pri4+ATS_" + pri).getBytes(), props);
                     logProgress(testCaseId, counter++, 20);
                 }
@@ -276,14 +279,14 @@ public class SwimToAmhsTests {
                 String[] atsPrisGrp3 = {"SS", "DD", "FF", "GG"};
                 for (String pri : atsPrisGrp3) {
                     SwimDriver.AMQPProperties props = new SwimDriver.AMQPProperties();
-                    props.setRecipients(recip); props.setAmqpPriority((short) 1); props.setAtsPri(pri);
+                    props.setRecipients(recip); props.setAmqpPriority((short) 1); props.setAtsPri(pri); props.setContentType("text/plain; charset=utf-8"); props.setBodyType(SwimDriver.AMQPProperties.BodyType.AMQP_VALUE);
                     swimDriver.publishMessage(testTopic, ("Pri1+ATS_" + pri).getBytes(), props);
                     logProgress(testCaseId, counter++, 20);
                 }
 
                 // Group 4: prio 9 + atsPri KK
                 SwimDriver.AMQPProperties props = new SwimDriver.AMQPProperties();
-                props.setRecipients(recip); props.setAmqpPriority((short) 9); props.setAtsPri("KK");
+                props.setRecipients(recip); props.setAmqpPriority((short) 9); props.setAtsPri("KK"); props.setContentType("text/plain; charset=utf-8"); props.setBodyType(SwimDriver.AMQPProperties.BodyType.AMQP_VALUE);
                 swimDriver.publishMessage(testTopic, "Pri9+ATS_KK".getBytes(), props);
                 logProgress(testCaseId, counter++, 20);
                 
@@ -306,8 +309,8 @@ public class SwimToAmhsTests {
         @Override
         public boolean execute(Map<String, String> inputs) throws Exception {
             try {
-                String testTopic = TestConfig.getInstance().getProperty("gateway.default_topic", "TEST.TOPIC");
-                String recip = TestConfig.getInstance().getProperty("gateway.test_recipient", "VVTSYMYX");
+                String testTopic = inputs.getOrDefault("topic", TestConfig.getInstance().getProperty("gateway.default_topic", "TEST.TOPIC"));
+                String recip = inputs.getOrDefault("recipient", TestConfig.getInstance().getProperty("gateway.test_recipient", "VVTSYMYX"));
                 
                 // 1. Default (No amhs_ats_ft set)
                 SwimDriver.AMQPProperties props1 = new SwimDriver.AMQPProperties();
@@ -330,7 +333,10 @@ public class SwimToAmhsTests {
     public BaseTestCase CTSW106 = new BaseTestCase("CTSW106", "Convert AMQP with OHI mapping") {
         @Override
         public List<TestParameter> getRequiredParameters() {
-            return List.of(new TestParameter("p", "Dummy", "", false));
+            return List.of(
+                new TestParameter("topic", "AMQP Topic:", "TEST.TOPIC", false),
+                new TestParameter("recipient", "AMHS Recipient:", "VVTSYMYX", false)
+            );
         }
 
         @Override
@@ -338,14 +344,14 @@ public class SwimToAmhsTests {
             try {
                 String[] ohiInputs = {"OHI-SHORT", "A".repeat(53), "A".repeat(60), "OHI-HI-SHORT", "B".repeat(48), "B".repeat(60)};
                 int[] priorities = {4, 4, 4, 6, 6, 6}; // 4=limit 53, 6=limit 48
-                String tTopic = TestConfig.getInstance().getProperty("gateway.default_topic", "TEST.TOPIC");
-                String recip = TestConfig.getInstance().getProperty("gateway.test_recipient", "VVTSYMYX");
+                String tTopic = inputs.getOrDefault("topic", TestConfig.getInstance().getProperty("gateway.default_topic", "TEST.TOPIC"));
+                String recip = inputs.getOrDefault("recipient", TestConfig.getInstance().getProperty("gateway.test_recipient", "VVTSYMYX"));
                 
                 for (int i = 0; i < ohiInputs.length; i++) {
                     SwimDriver.AMQPProperties props = new SwimDriver.AMQPProperties();
                     props.setRecipients(recip);
                     props.setAmqpPriority((short) priorities[i]);
-                    props.setExtraProp("amhs_ats_ohi", ohiInputs[i]); 
+                    props.setExtraProp("amhs_ats_ohi", ohiInputs[i]); props.setContentType("text/plain; charset=utf-8"); props.setBodyType(SwimDriver.AMQPProperties.BodyType.AMQP_VALUE); 
                     swimDriver.publishMessage(tTopic, "OHI Content".getBytes(), props);
                 }
                 
@@ -359,18 +365,21 @@ public class SwimToAmhsTests {
     public BaseTestCase CTSW107 = new BaseTestCase("CTSW107", "Convert AMQP with subject mapping") {
         @Override
         public List<TestParameter> getRequiredParameters() {
-            return List.of(new TestParameter("p", "Dummy", "", false));
+            return List.of(
+                new TestParameter("topic", "AMQP Topic:", "TEST.TOPIC", false),
+                new TestParameter("recipient", "AMHS Recipient:", "VVTSYMYX", false)
+            );
         }
 
         @Override
         public boolean execute(Map<String, String> inputs) throws Exception {
             try {
-                String tTopic = TestConfig.getInstance().getProperty("gateway.default_topic", "TEST.TOPIC");
-                String recip = TestConfig.getInstance().getProperty("gateway.test_recipient", "VVTSYMYX");
+                String tTopic = inputs.getOrDefault("topic", TestConfig.getInstance().getProperty("gateway.default_topic", "TEST.TOPIC"));
+                String recip = inputs.getOrDefault("recipient", TestConfig.getInstance().getProperty("gateway.test_recipient", "VVTSYMYX"));
 
                 // 1. Long AMQP subject (>128)
                 SwimDriver.AMQPProperties p1 = new SwimDriver.AMQPProperties();
-                p1.setRecipients(recip); p1.setSubject("S".repeat(150));
+                p1.setRecipients(recip); p1.setSubject("S".repeat(150)); p1.setContentType("text/plain; charset=utf-8"); p1.setBodyType(SwimDriver.AMQPProperties.BodyType.AMQP_VALUE);
                 swimDriver.publishMessage(tTopic, "Msg1".getBytes(), p1);
 
                 // 2. Normal AMQP subject
@@ -403,11 +412,11 @@ public class SwimToAmhsTests {
         public boolean execute(Map<String, String> inputs) throws Exception {
             try {
                 SwimDriver.AMQPProperties props = new SwimDriver.AMQPProperties();
-                props.setRecipients(TestConfig.getInstance().getProperty("gateway.test_recipient", "VVTSYMYX"));
+                props.setRecipients(inputs.getOrDefault("recipient", TestConfig.getInstance().getProperty("gateway.test_recipient", "VVTSYMYX")));
                 props.setOriginator("VVTSYMYX");
                 props.setContentType("text/plain; charset=utf-8");
                 props.setBodyType(SwimDriver.AMQPProperties.BodyType.AMQP_VALUE);
-                swimDriver.publishMessage(TestConfig.getInstance().getProperty("gateway.default_topic", "TEST.TOPIC"), "Known Ori".getBytes(), props);
+                swimDriver.publishMessage(inputs.getOrDefault("topic", TestConfig.getInstance().getProperty("gateway.default_topic", "TEST.TOPIC")), "Known Ori".getBytes(), props);
                 logManualAction(testCaseId, "Msg 1 delivered with VVTSYMYX originator.");
                 return true;
             } catch (Exception e) { return false; }
@@ -422,11 +431,11 @@ public class SwimToAmhsTests {
         public boolean execute(Map<String, String> inputs) throws Exception {
             try {
                 SwimDriver.AMQPProperties props = new SwimDriver.AMQPProperties();
-                props.setRecipients(TestConfig.getInstance().getProperty("gateway.test_recipient", "VVTSYMYX"));
+                props.setRecipients(inputs.getOrDefault("recipient", TestConfig.getInstance().getProperty("gateway.test_recipient", "VVTSYMYX")));
                 props.setOriginator("UNKNOWN1");
                 props.setContentType("text/plain; charset=utf-8");
                 props.setBodyType(SwimDriver.AMQPProperties.BodyType.AMQP_VALUE);
-                swimDriver.publishMessage(TestConfig.getInstance().getProperty("gateway.default_topic", "TEST.TOPIC"), "Unk Ori".getBytes(), props);
+                swimDriver.publishMessage(inputs.getOrDefault("topic", TestConfig.getInstance().getProperty("gateway.default_topic", "TEST.TOPIC")), "Unk Ori".getBytes(), props);
                 logManualAction(testCaseId, "Gateway acts: Rejects or applies Default Originator fallback.");
                 return true;
             } catch (Exception e) { return false; }
@@ -441,8 +450,8 @@ public class SwimToAmhsTests {
         @Override
         public boolean execute(Map<String, String> inputs) throws Exception {
             try {
-                String tTopic = TestConfig.getInstance().getProperty("gateway.default_topic", "TEST.TOPIC");
-                String recip = TestConfig.getInstance().getProperty("gateway.test_recipient", "VVTSYMYX");
+                String tTopic = inputs.getOrDefault("topic", TestConfig.getInstance().getProperty("gateway.default_topic", "TEST.TOPIC"));
+                String recip = inputs.getOrDefault("recipient", TestConfig.getInstance().getProperty("gateway.test_recipient", "VVTSYMYX"));
 
                 // Spec lists 6 scenarios
                 // 1. application/octet-stream, amqp-value empty, data empty -> REJECT
@@ -487,8 +496,8 @@ public class SwimToAmhsTests {
         public boolean execute(Map<String, String> inputs) throws Exception {
             try {
                 int max = 1048576; // Assume 1MB
-                String tTopic = TestConfig.getInstance().getProperty("gateway.default_topic", "TEST.TOPIC");
-                String recip = TestConfig.getInstance().getProperty("gateway.test_recipient", "VVTSYMYX");
+                String tTopic = inputs.getOrDefault("topic", TestConfig.getInstance().getProperty("gateway.default_topic", "TEST.TOPIC"));
+                String recip = inputs.getOrDefault("recipient", TestConfig.getInstance().getProperty("gateway.test_recipient", "VVTSYMYX"));
                 
                 // a) normal text inside max -> ACCEPT
                 SwimDriver.AMQPProperties pa = new SwimDriver.AMQPProperties();
@@ -523,7 +532,7 @@ public class SwimToAmhsTests {
         @Override
         public boolean execute(Map<String, String> inputs) throws Exception {
             try {
-                String tTopic = TestConfig.getInstance().getProperty("gateway.default_topic", "TEST.TOPIC");
+                String tTopic = inputs.getOrDefault("topic", TestConfig.getInstance().getProperty("gateway.default_topic", "TEST.TOPIC"));
                 
                 // a) 512 Recs -> ACCEPT
                 StringBuilder recs512 = new StringBuilder();
@@ -552,14 +561,14 @@ public class SwimToAmhsTests {
         @Override
         public boolean execute(Map<String, String> inputs) throws Exception {
             try {
-                String tTopic = TestConfig.getInstance().getProperty("gateway.default_topic", "TEST.TOPIC");
-                String recip = TestConfig.getInstance().getProperty("gateway.test_recipient", "VVTSYMYX");
+                String tTopic = inputs.getOrDefault("topic", TestConfig.getInstance().getProperty("gateway.default_topic", "TEST.TOPIC"));
+                String recip = inputs.getOrDefault("recipient", TestConfig.getInstance().getProperty("gateway.test_recipient", "VVTSYMYX"));
                 for (int i=1; i<=2; i++) {
                     SwimDriver.AMQPProperties props = new SwimDriver.AMQPProperties();
                     props.setRecipients(recip);
                     props.setContentType("text/plain; charset=utf-8");
                     props.setBodyType(SwimDriver.AMQPProperties.BodyType.AMQP_VALUE);
-                    props.setAmqpPriority((short) 6);
+                    props.setContentType("text/plain; charset=utf-8"); props.setBodyType(SwimDriver.AMQPProperties.BodyType.AMQP_VALUE); props.setAmqpPriority((short) 6);
                     props.setExtraProp("amhs_notification_request", "rn,nrn");
                     swimDriver.publishMessage(tTopic, "NotifRequest".getBytes(), props);
                 }
@@ -577,10 +586,10 @@ public class SwimToAmhsTests {
         public boolean execute(Map<String, String> inputs) throws Exception {
             try {
                 SwimDriver.AMQPProperties props = new SwimDriver.AMQPProperties();
-                props.setRecipients(TestConfig.getInstance().getProperty("gateway.test_recipient", "VVTSYMYX"));
+                props.setRecipients(inputs.getOrDefault("recipient", TestConfig.getInstance().getProperty("gateway.test_recipient", "VVTSYMYX")));
                 props.setContentType("text/plain; charset=utf-8");
                 props.setBodyType(SwimDriver.AMQPProperties.BodyType.AMQP_VALUE);
-                swimDriver.publishMessage(TestConfig.getInstance().getProperty("gateway.default_topic", "TEST.TOPIC"), "Trig NDR".getBytes(), props);
+                swimDriver.publishMessage(inputs.getOrDefault("topic", TestConfig.getInstance().getProperty("gateway.default_topic", "TEST.TOPIC")), "Trig NDR".getBytes(), props);
                 logManualAction(testCaseId, "Delete message in Terminal to trigger NDR.");
                 return true;
             } catch (Exception e) { return false; }
@@ -594,8 +603,8 @@ public class SwimToAmhsTests {
         @Override
         public boolean execute(Map<String, String> inputs) throws Exception {
             try {
-                String tTopic = TestConfig.getInstance().getProperty("gateway.default_topic", "TEST.TOPIC");
-                String recip = TestConfig.getInstance().getProperty("gateway.test_recipient", "VVTSYMYX");
+                String tTopic = inputs.getOrDefault("topic", TestConfig.getInstance().getProperty("gateway.default_topic", "TEST.TOPIC"));
+                String recip = inputs.getOrDefault("recipient", TestConfig.getInstance().getProperty("gateway.test_recipient", "VVTSYMYX"));
                 
                 String[] bodyParts = {"ia5-text", "ia5_text_body_part", "general-text-body-part", "general-text-body-part"};
                 String[] encodings = {"IA5", "IA5", "ISO-646", "ISO-8859-1"};
@@ -623,8 +632,8 @@ public class SwimToAmhsTests {
         @Override
         public boolean execute(Map<String, String> inputs) throws Exception {
             try {
-                String tTopic = TestConfig.getInstance().getProperty("gateway.default_topic", "TEST.TOPIC");
-                String recip = TestConfig.getInstance().getProperty("gateway.test_recipient", "VVTSYMYX");
+                String tTopic = inputs.getOrDefault("topic", TestConfig.getInstance().getProperty("gateway.default_topic", "TEST.TOPIC"));
+                String recip = inputs.getOrDefault("recipient", TestConfig.getInstance().getProperty("gateway.test_recipient", "VVTSYMYX"));
                 
                 // Read an actual file payload
                 java.nio.file.Path filePath = java.nio.file.Paths.get("src/main/resources/sample.pdf");
