@@ -405,6 +405,8 @@ public class SwimToAmhsTests {
                 SwimDriver.AMQPProperties props = new SwimDriver.AMQPProperties();
                 props.setRecipients(TestConfig.getInstance().getProperty("gateway.test_recipient", "VVTSYMYX"));
                 props.setOriginator("VVTSYMYX");
+                props.setContentType("text/plain; charset=utf-8");
+                props.setBodyType(SwimDriver.AMQPProperties.BodyType.AMQP_VALUE);
                 swimDriver.publishMessage(TestConfig.getInstance().getProperty("gateway.default_topic", "TEST.TOPIC"), "Known Ori".getBytes(), props);
                 logManualAction(testCaseId, "Msg 1 delivered with VVTSYMYX originator.");
                 return true;
@@ -422,6 +424,8 @@ public class SwimToAmhsTests {
                 SwimDriver.AMQPProperties props = new SwimDriver.AMQPProperties();
                 props.setRecipients(TestConfig.getInstance().getProperty("gateway.test_recipient", "VVTSYMYX"));
                 props.setOriginator("UNKNOWN1");
+                props.setContentType("text/plain; charset=utf-8");
+                props.setBodyType(SwimDriver.AMQPProperties.BodyType.AMQP_VALUE);
                 swimDriver.publishMessage(TestConfig.getInstance().getProperty("gateway.default_topic", "TEST.TOPIC"), "Unk Ori".getBytes(), props);
                 logManualAction(testCaseId, "Gateway acts: Rejects or applies Default Originator fallback.");
                 return true;
@@ -574,6 +578,8 @@ public class SwimToAmhsTests {
             try {
                 SwimDriver.AMQPProperties props = new SwimDriver.AMQPProperties();
                 props.setRecipients(TestConfig.getInstance().getProperty("gateway.test_recipient", "VVTSYMYX"));
+                props.setContentType("text/plain; charset=utf-8");
+                props.setBodyType(SwimDriver.AMQPProperties.BodyType.AMQP_VALUE);
                 swimDriver.publishMessage(TestConfig.getInstance().getProperty("gateway.default_topic", "TEST.TOPIC"), "Trig NDR".getBytes(), props);
                 logManualAction(testCaseId, "Delete message in Terminal to trigger NDR.");
                 return true;

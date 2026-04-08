@@ -175,6 +175,9 @@ public class QpidSwimAdapter implements SwimMessagingAdapter {
         if (properties.containsKey("amhs_reply_to")) {
             message.setReplyTo((String) properties.get("amhs_reply_to"));
         }
+        if (properties.containsKey("content_type")) {
+            message.setContentType((String) properties.get("content_type"));
+        }
         
         // Set creation time if present
         if (properties.containsKey("creation_time")) {
@@ -194,7 +197,7 @@ public class QpidSwimAdapter implements SwimMessagingAdapter {
         Map<String, Object> appProperties = new HashMap<>();
         for (Map.Entry<String, Object> entry : properties.entrySet()) {
             String key = entry.getKey();
-            if (key.startsWith("amhs_")) {
+            if (key.startsWith("amhs_") || key.equals("swim_compression")) {
                 appProperties.put(key, entry.getValue());
             }
         }
