@@ -206,8 +206,3 @@ public class TestFrame extends JFrame {
         Logger.log("GUI", message);
     }
 }
-getLength());
-        });
-        Logger.log("GUI", message);
-    }
-}
