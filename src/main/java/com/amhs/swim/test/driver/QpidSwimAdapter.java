@@ -128,6 +128,18 @@ public class QpidSwimAdapter implements SwimMessagingAdapter {
     }
     
     @Override
+    public void publishToTopic(String topic, byte[] payload, Map<String, Object> properties) throws Exception {
+        // For AMQP 1.0 (Qpid), topic vs queue routing is determined by the broker address.
+        // The address is set as the message target in publishMessage.
+        publishMessage(topic, payload, properties);
+    }
+
+    @Override
+    public void publishToQueue(String queue, byte[] payload, Map<String, Object> properties) throws Exception {
+        publishMessage(queue, payload, properties);
+    }
+
+    @Override
     public void publishMessage(String topic, byte[] payload, Map<String, Object> properties) throws Exception {
         if (!isConnected) {
             connect();

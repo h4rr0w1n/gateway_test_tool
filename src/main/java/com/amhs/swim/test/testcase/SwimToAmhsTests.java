@@ -40,6 +40,14 @@ public class SwimToAmhsTests {
         }
     }
 
+
+    private void publishDual(Map<String, String> inputs, byte[] payload, SwimDriver.AMQPProperties props) throws Exception {
+        String testTopic = inputs.getOrDefault("topic", TestConfig.getInstance().getProperty("gateway.default_topic", "TEST.TOPIC"));
+        String testQueue = inputs.getOrDefault("queue", TestConfig.getInstance().getProperty("gateway.default_queue", "TEST.QUEUE"));
+        swimDriver.publishToQueue(testQueue, payload, props);
+        swimDriver.publishToTopic(testTopic, payload, props);
+    }
+
     // ==================== DOMAIN G: Normal Message Conversion ====================
 
     public BaseTestCase CTSW101 = new BaseTestCase("CTSW101", "Convert AMQP unaware message to AMHS") {
@@ -64,7 +72,7 @@ public class SwimToAmhsTests {
                 props1.setAmqpPriority((short) 4);
                 props1.setContentType("text/plain; charset=utf-8");
                 props1.setBodyType(SwimDriver.AMQPProperties.BodyType.AMQP_VALUE); // Using amqp-value
-                swimDriver.publishMessage(testTopic, inputs.getOrDefault("p1", "CTSW101 Text Payload").getBytes(), props1);
+                publishDual(inputs, inputs.getOrDefault("p1", "CTSW101 Text Payload").getBytes(), props1);
 
                 // 2. Binary Message
                 SwimDriver.AMQPProperties props2 = new SwimDriver.AMQPProperties();
@@ -72,7 +80,7 @@ public class SwimToAmhsTests {
                 props2.setAmqpPriority((short) 4);
                 props2.setContentType("application/octet-stream");
                 props2.setBodyType(SwimDriver.AMQPProperties.BodyType.DATA); // Using data
-                swimDriver.publishMessage(testTopic, inputs.getOrDefault("p2", "CTSW101 Binary Payload").getBytes(), props2);
+                publishDual(inputs, inputs.getOrDefault("p2", "CTSW101 Binary Payload").getBytes(), props2);
 
                 Logger.logVerification(testCaseId, "Text and Binary messages injected.");
                 logManualAction(testCaseId, "VERIFICATION STEPS:\n" +
@@ -118,7 +126,7 @@ public class SwimToAmhsTests {
                     props1.setBodyType(bt);
                     props1.setRecipients(recipient);
                     props1.setAmqpPriority((short) 10);
-                    swimDriver.publishMessage(testTopic, payload, props1);
+                    publishDual(inputs, payload, props1);
                     logProgress(testCaseId, msgIndex++, 10);
 
                     // 2. Empty message-id
@@ -128,7 +136,7 @@ public class SwimToAmhsTests {
                     props2.setRecipients(recipient);
                     props2.setAmqpPriority((short) 4);
                     props2.setMessageId("");
-                    swimDriver.publishMessage(testTopic, payload, props2);
+                    publishDual(inputs, payload, props2);
                     logProgress(testCaseId, msgIndex++, 10);
 
                     // 3. 0 creation-time
@@ -138,7 +146,7 @@ public class SwimToAmhsTests {
                     props3.setRecipients(recipient);
                     props3.setAmqpPriority((short) 4);
                     props3.setCreationTime(0L);
-                    swimDriver.publishMessage(testTopic, payload, props3);
+                    publishDual(inputs, payload, props3);
                     logProgress(testCaseId, msgIndex++, 10);
 
                     // 4. Empty data/amqp-value
@@ -147,7 +155,7 @@ public class SwimToAmhsTests {
                     props4.setBodyType(bt);
                     props4.setRecipients(recipient);
                     props4.setAmqpPriority((short) 4);
-                    swimDriver.publishMessage(testTopic, new byte[0], props4);
+                    publishDual(inputs, new byte[0], props4);
                     logProgress(testCaseId, msgIndex++, 10);
 
                     // 5. Empty/Invalid recipients
@@ -157,7 +165,7 @@ public class SwimToAmhsTests {
                     if (i == 0) props5.setRecipients("");
                     else props5.setRecipients("LONGADDRESSXXXXX"); // >8 chars for binary
                     props5.setAmqpPriority((short) 4);
-                    swimDriver.publishMessage(testTopic, payload, props5);
+                    publishDual(inputs, payload, props5);
                     logProgress(testCaseId, msgIndex++, 10);
                 }
                 
@@ -191,45 +199,45 @@ public class SwimToAmhsTests {
                 SwimDriver.AMQPProperties p1 = new SwimDriver.AMQPProperties();
                 p1.setRecipients(recip); p1.setContentType("text/plain; charset=utf-8");
                 p1.setExtraProp("amhs_service_level", "basic");
-                swimDriver.publishMessage(tTopic, (prefix + " Basic Text").getBytes(), p1);
+                publishDual(inputs, (prefix + " Basic Text").getBytes(), p1);
                 
                 // 2. Basic (Binary) -> REJECTED
                 SwimDriver.AMQPProperties p2 = new SwimDriver.AMQPProperties();
                 p2.setRecipients(recip); p2.setContentType("application/octet-stream");
                 p2.setBodyType(SwimDriver.AMQPProperties.BodyType.DATA);
                 p2.setExtraProp("amhs_service_level", "basic");
-                swimDriver.publishMessage(tTopic, (prefix + " Binary REJECTED").getBytes(), p2);
+                publishDual(inputs, (prefix + " Binary REJECTED").getBytes(), p2);
 
                 // 3. Extended (Text)
                 SwimDriver.AMQPProperties p3 = new SwimDriver.AMQPProperties();
                 p3.setRecipients(recip); p3.setContentType("text/plain; charset=utf-8");
                 p3.setExtraProp("amhs_service_level", "extended");
-                swimDriver.publishMessage(tTopic, (prefix + " Extended Text").getBytes(), p3);
+                publishDual(inputs, (prefix + " Extended Text").getBytes(), p3);
 
                 // 4. Content Based (Binary -> Ext)
                 SwimDriver.AMQPProperties p4 = new SwimDriver.AMQPProperties();
                 p4.setRecipients(recip); p4.setContentType("application/octet-stream");
                 p4.setExtraProp("amhs_service_level", "content-based");
-                swimDriver.publishMessage(tTopic, (prefix + " Content-based Binary -> Ext").getBytes(), p4);
+                publishDual(inputs, (prefix + " Content-based Binary -> Ext").getBytes(), p4);
 
                 // 5. Content Based (Text -> Basic)
                 SwimDriver.AMQPProperties p5 = new SwimDriver.AMQPProperties();
                 p5.setRecipients(recip); p5.setContentType("text/plain; charset=utf-8");
                 p5.setExtraProp("amhs_service_level", "content-based");
-                swimDriver.publishMessage(tTopic, (prefix + " Content-based Text -> Basic").getBytes(), p5);
+                publishDual(inputs, (prefix + " Content-based Text -> Basic").getBytes(), p5);
 
                 // 6. Recipient Based (All Ext)
                 SwimDriver.AMQPProperties p6 = new SwimDriver.AMQPProperties();
                 p6.setRecipients(recip); p6.setContentType("text/plain; charset=utf-8");
                 p6.setExtraProp("amhs_service_level", "recipient-based");
-                swimDriver.publishMessage(tTopic, (prefix + " Recip-based All Ext").getBytes(), p6);
+                publishDual(inputs, (prefix + " Recip-based All Ext").getBytes(), p6);
 
                 // 7. Recipient Based (Mixed)
                 SwimDriver.AMQPProperties p7 = new SwimDriver.AMQPProperties();
                 p7.setRecipients(recip + ",VVTSNONEXT"); // Second recipient doesn't support extended
                 p7.setContentType("text/plain; charset=utf-8");
                 p7.setExtraProp("amhs_service_level", "recipient-based");
-                swimDriver.publishMessage(tTopic, (prefix + " Recip-based Mixed").getBytes(), p7);
+                publishDual(inputs, (prefix + " Recip-based Mixed").getBytes(), p7);
                 
                 Logger.logVerification(testCaseId, "7 Service Level scenarios injected.");
                 logManualAction(testCaseId, "VERIFICATION STEPS:\n" +
@@ -262,7 +270,7 @@ public class SwimToAmhsTests {
                 for (int i = 0; i <= 9; i++) {
                     SwimDriver.AMQPProperties props = new SwimDriver.AMQPProperties();
                     props.setRecipients(recip); props.setAmqpPriority((short) i); props.setContentType("text/plain; charset=utf-8"); props.setBodyType(SwimDriver.AMQPProperties.BodyType.AMQP_VALUE);
-                    swimDriver.publishMessage(testTopic, ("P" + i).getBytes(), props);
+                    publishDual(inputs, ("P" + i).getBytes(), props);
                     logProgress(testCaseId, counter++, 20);
                 }
                 
@@ -271,7 +279,7 @@ public class SwimToAmhsTests {
                 for (String pri : atsPris) {
                     SwimDriver.AMQPProperties props = new SwimDriver.AMQPProperties();
                     props.setRecipients(recip); props.setAmqpPriority((short) 4); props.setAtsPri(pri); props.setContentType("text/plain; charset=utf-8"); props.setBodyType(SwimDriver.AMQPProperties.BodyType.AMQP_VALUE);
-                    swimDriver.publishMessage(testTopic, ("Pri4+ATS_" + pri).getBytes(), props);
+                    publishDual(inputs, ("Pri4+ATS_" + pri).getBytes(), props);
                     logProgress(testCaseId, counter++, 20);
                 }
 
@@ -280,14 +288,14 @@ public class SwimToAmhsTests {
                 for (String pri : atsPrisGrp3) {
                     SwimDriver.AMQPProperties props = new SwimDriver.AMQPProperties();
                     props.setRecipients(recip); props.setAmqpPriority((short) 1); props.setAtsPri(pri); props.setContentType("text/plain; charset=utf-8"); props.setBodyType(SwimDriver.AMQPProperties.BodyType.AMQP_VALUE);
-                    swimDriver.publishMessage(testTopic, ("Pri1+ATS_" + pri).getBytes(), props);
+                    publishDual(inputs, ("Pri1+ATS_" + pri).getBytes(), props);
                     logProgress(testCaseId, counter++, 20);
                 }
 
                 // Group 4: prio 9 + atsPri KK
                 SwimDriver.AMQPProperties props = new SwimDriver.AMQPProperties();
                 props.setRecipients(recip); props.setAmqpPriority((short) 9); props.setAtsPri("KK"); props.setContentType("text/plain; charset=utf-8"); props.setBodyType(SwimDriver.AMQPProperties.BodyType.AMQP_VALUE);
-                swimDriver.publishMessage(testTopic, "Pri9+ATS_KK".getBytes(), props);
+                publishDual(inputs, "Pri9+ATS_KK".getBytes(), props);
                 logProgress(testCaseId, counter++, 20);
                 
                 logManualAction(testCaseId, "VERIFICATION: Confirm arrival of 20 messages. Check priority mapping tables.");
@@ -315,13 +323,13 @@ public class SwimToAmhsTests {
                 // 1. Default (No amhs_ats_ft set)
                 SwimDriver.AMQPProperties props1 = new SwimDriver.AMQPProperties();
                 props1.setRecipients(recip);
-                swimDriver.publishMessage(testTopic, inputs.getOrDefault("p1", "1").getBytes(), props1);
+                publishDual(inputs, inputs.getOrDefault("p1", "1").getBytes(), props1);
 
                 // 2. Explicit (amhs_ats_ft = 250102)
                 SwimDriver.AMQPProperties props2 = new SwimDriver.AMQPProperties();
                 props2.setRecipients(recip);
                 props2.setFilingTime("250102");
-                swimDriver.publishMessage(testTopic, inputs.getOrDefault("p2", "2").getBytes(), props2);
+                publishDual(inputs, inputs.getOrDefault("p2", "2").getBytes(), props2);
                 
                 logManualAction(testCaseId, "VERIFICATION: Msg 1 FT = current DDhhmm. Msg 2 FT = 250102.");
                 return true;
@@ -352,7 +360,7 @@ public class SwimToAmhsTests {
                     props.setRecipients(recip);
                     props.setAmqpPriority((short) priorities[i]);
                     props.setExtraProp("amhs_ats_ohi", ohiInputs[i]); props.setContentType("text/plain; charset=utf-8"); props.setBodyType(SwimDriver.AMQPProperties.BodyType.AMQP_VALUE); 
-                    swimDriver.publishMessage(tTopic, "OHI Content".getBytes(), props);
+                    publishDual(inputs, "OHI Content".getBytes(), props);
                 }
                 
                 logManualAction(testCaseId, "VERIFICATION: Low Pri (msgs 1-3) truncated at 53. High Pri (msgs 4-6) truncated at 48.");
@@ -380,23 +388,23 @@ public class SwimToAmhsTests {
                 // 1. Long AMQP subject (>128)
                 SwimDriver.AMQPProperties p1 = new SwimDriver.AMQPProperties();
                 p1.setRecipients(recip); p1.setSubject("S".repeat(150)); p1.setContentType("text/plain; charset=utf-8"); p1.setBodyType(SwimDriver.AMQPProperties.BodyType.AMQP_VALUE);
-                swimDriver.publishMessage(tTopic, "Msg1".getBytes(), p1);
+                publishDual(inputs, "Msg1".getBytes(), p1);
 
                 // 2. Normal AMQP subject
                 SwimDriver.AMQPProperties p2 = new SwimDriver.AMQPProperties();
                 p2.setRecipients(recip); p2.setSubject("Normal Subject");
-                swimDriver.publishMessage(tTopic, "Msg2".getBytes(), p2);
+                publishDual(inputs, "Msg2".getBytes(), p2);
 
                 // 3. amhs_subject application property
                 SwimDriver.AMQPProperties p3 = new SwimDriver.AMQPProperties();
                 p3.setRecipients(recip); p3.setExtraProp("amhs_subject", "AMHS App Prop Subject");
-                swimDriver.publishMessage(tTopic, "Msg3".getBytes(), p3);
+                publishDual(inputs, "Msg3".getBytes(), p3);
 
                 // 4. Both present
                 SwimDriver.AMQPProperties p4 = new SwimDriver.AMQPProperties();
                 p4.setRecipients(recip); p4.setSubject("AMQP Standard Subject");
                 p4.setExtraProp("amhs_subject", "AMHS Override Subject");
-                swimDriver.publishMessage(tTopic, "Msg4".getBytes(), p4);
+                publishDual(inputs, "Msg4".getBytes(), p4);
 
                 logManualAction(testCaseId, "VERIFICATION: Msg 1 truncated to 128 chars. Msg 4 subject must equal 'AMHS Override Subject'.");
                 return true;
@@ -421,7 +429,7 @@ public class SwimToAmhsTests {
                 props.setOriginator("VVTSYMYX");
                 props.setContentType("text/plain; charset=utf-8");
                 props.setBodyType(SwimDriver.AMQPProperties.BodyType.AMQP_VALUE);
-                swimDriver.publishMessage(inputs.getOrDefault("topic", TestConfig.getInstance().getProperty("gateway.default_topic", "TEST.TOPIC")), "Known Ori".getBytes(), props);
+                publishDual(inputs, "Known Ori".getBytes(), props);
                 logManualAction(testCaseId, "Msg 1 delivered with VVTSYMYX originator.");
                 return true;
             } catch (Exception e) { return false; }
@@ -445,7 +453,7 @@ public class SwimToAmhsTests {
                 props.setOriginator("UNKNOWN1");
                 props.setContentType("text/plain; charset=utf-8");
                 props.setBodyType(SwimDriver.AMQPProperties.BodyType.AMQP_VALUE);
-                swimDriver.publishMessage(inputs.getOrDefault("topic", TestConfig.getInstance().getProperty("gateway.default_topic", "TEST.TOPIC")), "Unk Ori".getBytes(), props);
+                publishDual(inputs, "Unk Ori".getBytes(), props);
                 logManualAction(testCaseId, "Gateway acts: Rejects or applies Default Originator fallback.");
                 return true;
             } catch (Exception e) { return false; }
@@ -472,27 +480,27 @@ public class SwimToAmhsTests {
                 // 1. application/octet-stream, amqp-value empty, data empty -> REJECT
                 SwimDriver.AMQPProperties p1 = new SwimDriver.AMQPProperties();
                 p1.setRecipients(recip); p1.setContentType("application/octet-stream"); p1.setBodyType(SwimDriver.AMQPProperties.BodyType.DATA);
-                swimDriver.publishMessage(tTopic, new byte[0], p1);
+                publishDual(inputs, new byte[0], p1);
 
                 // 2. text/plain utf-8, amqp-value empty, data presence -> REJECT
                 SwimDriver.AMQPProperties p2 = new SwimDriver.AMQPProperties();
                 p2.setRecipients(recip); p2.setContentType("text/plain; charset=utf-8"); p2.setBodyType(SwimDriver.AMQPProperties.BodyType.DATA);
-                swimDriver.publishMessage(tTopic, "binary".getBytes(), p2);
+                publishDual(inputs, "binary".getBytes(), p2);
 
                 // 3. application/octet-stream, amqp-value empty, data presence -> ACCEPT
                 SwimDriver.AMQPProperties p3 = new SwimDriver.AMQPProperties();
                 p3.setRecipients(recip); p3.setContentType("application/octet-stream"); p3.setBodyType(SwimDriver.AMQPProperties.BodyType.DATA);
-                swimDriver.publishMessage(tTopic, "binary-accept".getBytes(), p3);
+                publishDual(inputs, "binary-accept".getBytes(), p3);
 
                 // 4. text/plain utf-8, amqp-value presence, data empty -> ACCEPT
                 SwimDriver.AMQPProperties p4 = new SwimDriver.AMQPProperties();
                 p4.setRecipients(recip); p4.setContentType("text/plain; charset=utf-8"); p4.setBodyType(SwimDriver.AMQPProperties.BodyType.AMQP_VALUE);
-                swimDriver.publishMessage(tTopic, "text-accept".getBytes(), p4);
+                publishDual(inputs, "text-accept".getBytes(), p4);
 
                 // 5. text/plain utf-16 -> REJECT
                 SwimDriver.AMQPProperties p5 = new SwimDriver.AMQPProperties();
                 p5.setRecipients(recip); p5.setContentType("text/plain; charset=utf-16"); p5.setBodyType(SwimDriver.AMQPProperties.BodyType.AMQP_VALUE);
-                swimDriver.publishMessage(tTopic, "utf16".getBytes("UTF-16"), p5);
+                publishDual(inputs, "utf16".getBytes("UTF-16"), p5);
 
                 // 6. amqp-value and data present -> REJECT (we approximate by sending weird body type or unsupported properties to trigger rejection for test)
                 // In actual AMQP 1.0, you can't have both set simultaneously in Proton Message Body without custom encoding. 
@@ -522,22 +530,22 @@ public class SwimToAmhsTests {
                 // a) normal text inside max -> ACCEPT
                 SwimDriver.AMQPProperties pa = new SwimDriver.AMQPProperties();
                 pa.setRecipients(recip); pa.setContentType("text/plain; charset=utf-8"); pa.setBodyType(SwimDriver.AMQPProperties.BodyType.AMQP_VALUE);
-                swimDriver.publishMessage(tTopic, new byte[1024], pa);
+                publishDual(inputs, new byte[1024], pa);
 
                 // b) normal binary inside max -> ACCEPT
                 SwimDriver.AMQPProperties pb = new SwimDriver.AMQPProperties();
                 pb.setRecipients(recip); pb.setContentType("application/octet-stream"); pb.setBodyType(SwimDriver.AMQPProperties.BodyType.DATA);
-                swimDriver.publishMessage(tTopic, new byte[1024], pb);
+                publishDual(inputs, new byte[1024], pb);
 
                 // c) text exceeds -> REJECT
                 SwimDriver.AMQPProperties pc = new SwimDriver.AMQPProperties();
                 pc.setRecipients(recip); pc.setContentType("text/plain; charset=utf-8"); pc.setBodyType(SwimDriver.AMQPProperties.BodyType.AMQP_VALUE);
-                swimDriver.publishMessage(tTopic, new byte[max + 1024], pc);
+                publishDual(inputs, new byte[max + 1024], pc);
 
                 // d) binary exceeds -> REJECT
                 SwimDriver.AMQPProperties pd = new SwimDriver.AMQPProperties();
                 pd.setRecipients(recip); pd.setContentType("application/octet-stream"); pd.setBodyType(SwimDriver.AMQPProperties.BodyType.DATA);
-                swimDriver.publishMessage(tTopic, new byte[max + 1024], pd);
+                publishDual(inputs, new byte[max + 1024], pd);
 
                 logManualAction(testCaseId, "VERIFICATION: First 2 messages accept, Last 2 rejected.");
                 return true;
@@ -564,14 +572,14 @@ public class SwimToAmhsTests {
                 for (int i=0; i<512; i++) { if (i>0) recs512.append(","); recs512.append("VVTS").append(String.format("%04d", i)); }
                 SwimDriver.AMQPProperties pA = new SwimDriver.AMQPProperties();
                 pA.setRecipients(recs512.toString()); pA.setContentType("text/plain; charset=utf-8"); pA.setBodyType(SwimDriver.AMQPProperties.BodyType.AMQP_VALUE);
-                swimDriver.publishMessage(tTopic, "Msg 512".getBytes(), pA);
+                publishDual(inputs, "Msg 512".getBytes(), pA);
 
                 // b) 513 Recs -> REJECT
                 StringBuilder recs513 = new StringBuilder();
                 for (int i=0; i<513; i++) { if (i>0) recs513.append(","); recs513.append("VVTS").append(String.format("%04d", i)); }
                 SwimDriver.AMQPProperties pB = new SwimDriver.AMQPProperties();
                 pB.setRecipients(recs513.toString()); pB.setContentType("text/plain; charset=utf-8"); pB.setBodyType(SwimDriver.AMQPProperties.BodyType.AMQP_VALUE);
-                swimDriver.publishMessage(tTopic, "Msg 513".getBytes(), pB);
+                publishDual(inputs, "Msg 513".getBytes(), pB);
 
                 logManualAction(testCaseId, "VERIFICATION: Msg 1 (512) Accepted, Msg 2 (513) Rejected.");
                 return true;
@@ -600,7 +608,7 @@ public class SwimToAmhsTests {
                     props.setBodyType(SwimDriver.AMQPProperties.BodyType.AMQP_VALUE);
                     props.setContentType("text/plain; charset=utf-8"); props.setBodyType(SwimDriver.AMQPProperties.BodyType.AMQP_VALUE); props.setAmqpPriority((short) 6);
                     props.setExtraProp("amhs_notification_request", "rn,nrn");
-                    swimDriver.publishMessage(tTopic, "NotifRequest".getBytes(), props);
+                    publishDual(inputs, "NotifRequest".getBytes(), props);
                 }
                 logManualAction(testCaseId, "Priority mapped to SS. Generate NRN for Msg 1, RN for Msg 2 from Terminal.");
                 return true;
@@ -624,7 +632,7 @@ public class SwimToAmhsTests {
                 props.setRecipients(inputs.getOrDefault("recipient", TestConfig.getInstance().getProperty("gateway.test_recipient", "VVTSYMYX")));
                 props.setContentType("text/plain; charset=utf-8");
                 props.setBodyType(SwimDriver.AMQPProperties.BodyType.AMQP_VALUE);
-                swimDriver.publishMessage(inputs.getOrDefault("topic", TestConfig.getInstance().getProperty("gateway.default_topic", "TEST.TOPIC")), "Trig NDR".getBytes(), props);
+                publishDual(inputs, "Trig NDR".getBytes(), props);
                 logManualAction(testCaseId, "Delete message in Terminal to trigger NDR.");
                 return true;
             } catch (Exception e) { return false; }
@@ -657,7 +665,7 @@ public class SwimToAmhsTests {
                     props.setBodyType(SwimDriver.AMQPProperties.BodyType.AMQP_VALUE);
                     props.setBodyPartType(bodyParts[i]);
                     props.setExtraProp("amhs_content_encoding", encodings[i]);
-                    swimDriver.publishMessage(tTopic, payloads[i].getBytes(), props);
+                    publishDual(inputs, payloads[i].getBytes(), props);
                 }
                 logManualAction(testCaseId, "Verify correct translation to IA5Text and GeneralText body parts.");
                 return true;
@@ -693,7 +701,7 @@ public class SwimToAmhsTests {
                 p1.setExtraProp("amhs_ftbp_file_name", "sample.pdf");
                 p1.setExtraProp("amhs_ftbp_object_size", String.valueOf(fileSize));
                 p1.setExtraProp("amhs_ftbp_last_mod", "240101120000Z");
-                swimDriver.publishMessage(tTopic, binPayload, p1);
+                publishDual(inputs, binPayload, p1);
 
                 // 2. FTBP + GZIP
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -710,7 +718,7 @@ public class SwimToAmhsTests {
                 p2.setExtraProp("amhs_ftbp_object_size", String.valueOf(fileSize));
                 p2.setExtraProp("amhs_ftbp_last_mod", "240101120000Z");
                 p2.setExtraProp("swim_compression", "gzip");
-                swimDriver.publishMessage(tTopic, gzPayload, p2);
+                publishDual(inputs, gzPayload, p2);
 
                 logManualAction(testCaseId, "VERIFICATION: 2 File Transfer Body Parts received. Second should be uncompressed.");
                 return true;

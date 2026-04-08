@@ -101,11 +101,25 @@ public class SolaceSwimAdapter implements SwimMessagingAdapter {
     
     @Override
     public void publishMessage(String topic, byte[] payload, Map<String, Object> properties) throws Exception {
+        publishToTopic(topic, payload, properties);
+    }
+
+    @Override
+    public void publishToTopic(String topic, byte[] payload, Map<String, Object> properties) throws Exception {
+        publishInternal(JCSMPFactory.onlyInstance().createTopic(topic), payload, properties);
+    }
+
+    @Override
+    public void publishToQueue(String queue, byte[] payload, Map<String, Object> properties) throws Exception {
+        publishInternal(JCSMPFactory.onlyInstance().createQueue(queue), payload, properties);
+    }
+
+    private void publishInternal(Destination dest, byte[] payload, Map<String, Object> properties) throws Exception {
         if (!isConnected) {
             connect();
         }
         
-        Logger.log("INFO", "Publishing message via Solace JCSMP to: " + topic);
+        Logger.log("INFO", "Publishing message via Solace JCSMP to: " + dest.getName());
         
         // Create message
         XMLMessage msg;
@@ -137,8 +151,7 @@ public class SolaceSwimAdapter implements SwimMessagingAdapter {
         }
         
         // Send message
-        Topic solaceTopic = JCSMPFactory.onlyInstance().createTopic(topic);
-        producer.send(msg, solaceTopic);
+        producer.send(msg, dest);
         
         Logger.log("SUCCESS", "Message published via Solace JCSMP.");
     }

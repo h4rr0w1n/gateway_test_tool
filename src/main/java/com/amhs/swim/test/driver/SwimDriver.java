@@ -123,6 +123,25 @@ public class SwimDriver {
         Map<String, Object> propsMap = properties.toMap();
         publishMessage(topic, payload, propsMap);
     }
+
+    public void publishToTopic(String topic, byte[] payload, Map<String, Object> properties) throws Exception {
+        if (!isConnected) connect();
+        activeAdapter.publishToTopic(topic, payload, properties);
+    }
+    
+    public void publishToTopic(String topic, byte[] payload, AMQPProperties properties) throws Exception {
+        publishToTopic(topic, payload, properties.toMap());
+    }
+
+    public void publishToQueue(String queue, byte[] payload, Map<String, Object> properties) throws Exception {
+        if (!isConnected) connect();
+        activeAdapter.publishToQueue(queue, payload, properties);
+    }
+    
+    public void publishToQueue(String queue, byte[] payload, AMQPProperties properties) throws Exception {
+        publishToQueue(queue, payload, properties.toMap());
+    }
+
     
     /**
      * Subscribe và consume message từ SWIM.

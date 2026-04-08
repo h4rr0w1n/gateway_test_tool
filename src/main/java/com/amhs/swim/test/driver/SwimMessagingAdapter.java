@@ -29,6 +29,10 @@ public interface SwimMessagingAdapter {
      */
     void publishMessage(String topic, byte[] payload, Map<String, Object> properties) throws Exception;
 
+    void publishToTopic(String topic, byte[] payload, Map<String, Object> properties) throws Exception;
+
+    void publishToQueue(String queue, byte[] payload, Map<String, Object> properties) throws Exception;
+
     /**
      * Consume a message from the SWIM network.
      * @param address The source address/queue to consume from
