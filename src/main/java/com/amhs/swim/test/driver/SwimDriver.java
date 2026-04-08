@@ -264,17 +264,19 @@ public class SwimDriver {
     public static class AMQPProperties {
         private String atsPri;           // amhs_ats_pri: SS/DD/FF/GG/KK
         private Short amqpPriority;      // standard amqp priority: 0-9
-        private String recipients;       // amhs_recipients: danh sách recipients
+        private String recipients;       // amhs_recipients: list of recipients
         private String bodyPartType;     // amhs_bodypart_type: ia5-text, utf8-text, etc.
-        private String contentType;      // amhs_content_type
+        private String contentType;      // content-type AMQP property (e.g. application/octet-stream)
         private String originator;       // amhs_originator
-        private String subject;          // amhs_subject
+        private String subject;          // subject AMQP property
         private String messageId;        // amhs_message_id
         private Long creationTime;       // amqp creation-time
-        private String filingTime;       // amhs_filing_time
+        private String filingTime;       // amhs_ats_ft (ATS filing time DDhhmm)
         private String dlHistory;        // amhs_dl_history
-        private String secEnvelope;      // amhs_sec_envelope (cho signed messages)
+        private String secEnvelope;      // amhs_sec_envelope (signed messages)
         private String replyTo;          // amqp reply-to
+        // Extra arbitrary application properties (persistent, safe from toMap() discard bug)
+        private Map<String, Object> extraProps;
         
         // Advanced AMQP 1.0 Sections for Multi-Broker Support
         private Map<String, Object> messageAnnotations;
@@ -295,7 +297,19 @@ public class SwimDriver {
             this.messageAnnotations = new HashMap<>();
             this.deliveryAnnotations = new HashMap<>();
             this.footer = new HashMap<>();
+            this.extraProps = new HashMap<>();
         }
+
+        /**
+         * Set an arbitrary extra AMQP application property.
+         * This is the correct way to set properties not covered by typed setters.
+         * Unlike toMap().put(...), this persists across toMap() calls.
+         */
+        public void setExtraProp(String key, Object value) {
+            this.extraProps.put(key, value);
+        }
+
+        public Map<String, Object> getExtraProps() { return extraProps; }
         
         // Getters and Setters
         public Map<String, Object> getMessageAnnotations() { return messageAnnotations; }
@@ -351,19 +365,22 @@ public class SwimDriver {
         
         /**
          * Convert to Map<String, Object> for use with SwimMessagingAdapter.
+         * Extra properties set via setExtraProp() are included.
          */
         public Map<String, Object> toMap() {
             Map<String, Object> map = new HashMap<>();
+            // Merge extra properties first so typed setters take precedence
+            if (extraProps != null) map.putAll(extraProps);
             if (amqpPriority != null) map.put("amqp_priority", amqpPriority);
             if (atsPri != null) map.put("amhs_ats_pri", atsPri);
             if (recipients != null) map.put("amhs_recipients", recipients);
             if (bodyPartType != null) map.put("amhs_bodypart_type", bodyPartType);
-            if (contentType != null) map.put("amhs_content_type", contentType);
+            if (contentType != null) map.put("content_type", contentType);
             if (originator != null) map.put("amhs_originator", originator);
             if (subject != null) map.put("amhs_subject", subject);
             if (messageId != null) map.put("amhs_message_id", messageId);
             if (creationTime != null) map.put("creation_time", creationTime);
-            if (filingTime != null) map.put("amhs_filing_time", filingTime);
+            if (filingTime != null) map.put("amhs_ats_ft", filingTime);
             if (dlHistory != null) map.put("amhs_dl_history", dlHistory);
             if (secEnvelope != null) map.put("amhs_sec_envelope", secEnvelope);
             if (replyTo != null) map.put("amhs_reply_to", replyTo);
