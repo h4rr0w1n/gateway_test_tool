@@ -407,7 +407,12 @@ public class SwimToAmhsTests {
 
     public BaseTestCase CTSW108 = new BaseTestCase("CTSW108", "Known Originator") {
         @Override
-        public List<TestParameter> getRequiredParameters() { return List.of(); }
+        public List<TestParameter> getRequiredParameters() {
+            return List.of(
+                new TestParameter("topic", "AMQP Topic:", "TEST.TOPIC", false),
+                new TestParameter("recipient", "AMHS Recipient:", "VVTSYMYX", false)
+            );
+        }
         @Override
         public boolean execute(Map<String, String> inputs) throws Exception {
             try {
@@ -426,7 +431,12 @@ public class SwimToAmhsTests {
 
     public BaseTestCase CTSW109 = new BaseTestCase("CTSW109", "Unknown Originator") {
         @Override
-        public List<TestParameter> getRequiredParameters() { return List.of(); }
+        public List<TestParameter> getRequiredParameters() {
+            return List.of(
+                new TestParameter("topic", "AMQP Topic:", "TEST.TOPIC", false),
+                new TestParameter("recipient", "AMHS Recipient:", "VVTSYMYX", false)
+            );
+        }
         @Override
         public boolean execute(Map<String, String> inputs) throws Exception {
             try {
@@ -445,7 +455,12 @@ public class SwimToAmhsTests {
 
     public BaseTestCase CTSW110 = new BaseTestCase("CTSW110", "Reject AMQP unsupported content-type") {
         @Override
-        public List<TestParameter> getRequiredParameters() { return List.of(); }
+        public List<TestParameter> getRequiredParameters() {
+            return List.of(
+                new TestParameter("topic", "AMQP Topic:", "TEST.TOPIC", false),
+                new TestParameter("recipient", "AMHS Recipient:", "VVTSYMYX", false)
+            );
+        }
 
         @Override
         public boolean execute(Map<String, String> inputs) throws Exception {
@@ -491,7 +506,12 @@ public class SwimToAmhsTests {
 
     public BaseTestCase CTSW111 = new BaseTestCase("CTSW111", "Reject AMQP if payload exceeds max size") {
         @Override
-        public List<TestParameter> getRequiredParameters() { return List.of(); }
+        public List<TestParameter> getRequiredParameters() {
+            return List.of(
+                new TestParameter("topic", "AMQP Topic:", "TEST.TOPIC", false),
+                new TestParameter("recipient", "AMHS Recipient:", "VVTSYMYX", false)
+            );
+        }
         @Override
         public boolean execute(Map<String, String> inputs) throws Exception {
             try {
@@ -528,7 +548,12 @@ public class SwimToAmhsTests {
 
     public BaseTestCase CTSW112 = new BaseTestCase("CTSW112", "Reject AMQP max recipients") {
         @Override
-        public List<TestParameter> getRequiredParameters() { return List.of(); }
+        public List<TestParameter> getRequiredParameters() {
+            return List.of(
+                new TestParameter("topic", "AMQP Topic:", "TEST.TOPIC", false),
+                new TestParameter("recipient", "AMHS Recipient:", "VVTSYMYX", false)
+            );
+        }
         @Override
         public boolean execute(Map<String, String> inputs) throws Exception {
             try {
@@ -557,7 +582,12 @@ public class SwimToAmhsTests {
 
     public BaseTestCase CTSW113 = new BaseTestCase("CTSW113", "Incoming RN/NRN Notifications") {
         @Override
-        public List<TestParameter> getRequiredParameters() { return List.of(); }
+        public List<TestParameter> getRequiredParameters() {
+            return List.of(
+                new TestParameter("topic", "AMQP Topic:", "TEST.TOPIC", false),
+                new TestParameter("recipient", "AMHS Recipient:", "VVTSYMYX", false)
+            );
+        }
         @Override
         public boolean execute(Map<String, String> inputs) throws Exception {
             try {
@@ -581,7 +611,12 @@ public class SwimToAmhsTests {
 
     public BaseTestCase CTSW114 = new BaseTestCase("CTSW114", "Incoming NDR Reports") {
         @Override
-        public List<TestParameter> getRequiredParameters() { return List.of(); }
+        public List<TestParameter> getRequiredParameters() {
+            return List.of(
+                new TestParameter("topic", "AMQP Topic:", "TEST.TOPIC", false),
+                new TestParameter("recipient", "AMHS Recipient:", "VVTSYMYX", false)
+            );
+        }
         @Override
         public boolean execute(Map<String, String> inputs) throws Exception {
             try {
@@ -599,7 +634,12 @@ public class SwimToAmhsTests {
 
     public BaseTestCase CTSW115 = new BaseTestCase("CTSW115", "Convert AMQP with encoding mapping") {
         @Override
-        public List<TestParameter> getRequiredParameters() { return List.of(); }
+        public List<TestParameter> getRequiredParameters() {
+            return List.of(
+                new TestParameter("topic", "AMQP Topic:", "TEST.TOPIC", false),
+                new TestParameter("recipient", "AMHS Recipient:", "VVTSYMYX", false)
+            );
+        }
         @Override
         public boolean execute(Map<String, String> inputs) throws Exception {
             try {
@@ -628,7 +668,12 @@ public class SwimToAmhsTests {
 
     public BaseTestCase CTSW116 = new BaseTestCase("CTSW116", "Convert binary AMQP with FTBP and GZIP") {
         @Override
-        public List<TestParameter> getRequiredParameters() { return List.of(); }
+        public List<TestParameter> getRequiredParameters() {
+            return List.of(
+                new TestParameter("topic", "AMQP Topic:", "TEST.TOPIC", false),
+                new TestParameter("recipient", "AMHS Recipient:", "VVTSYMYX", false)
+            );
+        }
         @Override
         public boolean execute(Map<String, String> inputs) throws Exception {
             try {
