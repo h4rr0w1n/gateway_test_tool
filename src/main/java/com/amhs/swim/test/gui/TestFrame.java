@@ -113,6 +113,16 @@ public class TestFrame extends JFrame {
         targetPanel.add(recipientField);
         configPanel.add(targetPanel);
 
+        // Deep Trace Toggle
+        JPanel tracePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JCheckBox traceCheck = new JCheckBox("Enable Deep AMQP Trace (ICAO Compliance)");
+        traceCheck.setSelected(false);
+        traceCheck.addActionListener(e -> {
+            swimToAmhsTests.getSwimDriver().setTraceEnabled(traceCheck.isSelected());
+        });
+        tracePanel.add(traceCheck);
+        configPanel.add(tracePanel);
+
         JButton checkConnBtn = new JButton("Check Connection");
         checkConnBtn.addActionListener(e -> {
             new Thread(() -> {

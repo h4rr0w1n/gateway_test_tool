@@ -145,8 +145,10 @@ public class SolaceSwimAdapter implements SwimMessagingAdapter {
         }
         msg.setProperties(userProps);
         
-        // Set Priority (0-9)
-        if (properties.containsKey("amhs_ats_pri")) {
+        // Set Priority (0-9, or 10+ for rejection testing)
+        if (properties.containsKey("amqp_priority")) {
+            msg.setPriority(((Number) properties.get("amqp_priority")).intValue());
+        } else if (properties.containsKey("amhs_ats_pri")) {
             msg.setPriority(mapAmhsPriorityToInt((String) properties.get("amhs_ats_pri")));
         }
         

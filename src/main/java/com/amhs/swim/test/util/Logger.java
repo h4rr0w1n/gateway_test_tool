@@ -52,6 +52,23 @@ public class Logger {
     }
 
     /**
+     * Records a deep trace of AMQP 1.0 properties for compliance verification.
+     * @param props Map of AMQP properties and application properties.
+     */
+    public static void logAMQPDeepTrace(java.util.Map<String, Object> props) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("\n  [DEEP INSPECTION] AMQP 1.0 Message Metadata:\n");
+        sb.append("  ").append("-".repeat(50)).append("\n");
+        props.forEach((k, v) -> {
+            if (v != null) {
+                sb.append(String.format("  %-25s : %s\n", k, v));
+            }
+        });
+        sb.append("  ").append("-".repeat(50)).append("\n");
+        log("TRACE", sb.toString());
+    }
+
+    /**
      * Records traffic log for a test request (as per EUR Doc 047).
      * @param direction Direction (AMHS->SWIM or SWIM->AMHS).
      * @param content Raw message content.

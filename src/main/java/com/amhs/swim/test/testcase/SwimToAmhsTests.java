@@ -107,7 +107,7 @@ public class SwimToAmhsTests {
         @Override
         public boolean execute(Map<String, String> inputs) throws Exception {
             try {
-                logTransmission(testCaseId, "Injecting 10 malformed scenarios (5 text, 5 binary).");
+                logTransmission(testCaseId, "Injecting 12 malformed scenarios (6 text, 6 binary).");
                 String testTopic = inputs.getOrDefault("topic", TestConfig.getInstance().getProperty("gateway.default_topic", "TEST.TOPIC"));
                 String recipient = inputs.getOrDefault("recipient", TestConfig.getInstance().getProperty("gateway.test_recipient", "VVTSYMYX"));
                 byte[] payload = inputs.getOrDefault("payload", "Content").getBytes();
@@ -127,7 +127,7 @@ public class SwimToAmhsTests {
                     props1.setRecipients(recipient);
                     props1.setAmqpPriority((short) 10);
                     publishDual(inputs, payload, props1);
-                    logProgress(testCaseId, msgIndex++, 10);
+                    logProgress(testCaseId, msgIndex++, 12);
 
                     // 2. Empty message-id
                     SwimDriver.AMQPProperties props2 = new SwimDriver.AMQPProperties();
@@ -137,7 +137,7 @@ public class SwimToAmhsTests {
                     props2.setAmqpPriority((short) 4);
                     props2.setMessageId("");
                     publishDual(inputs, payload, props2);
-                    logProgress(testCaseId, msgIndex++, 10);
+                    logProgress(testCaseId, msgIndex++, 12);
 
                     // 3. 0 creation-time
                     SwimDriver.AMQPProperties props3 = new SwimDriver.AMQPProperties();
@@ -147,7 +147,7 @@ public class SwimToAmhsTests {
                     props3.setAmqpPriority((short) 4);
                     props3.setCreationTime(0L);
                     publishDual(inputs, payload, props3);
-                    logProgress(testCaseId, msgIndex++, 10);
+                    logProgress(testCaseId, msgIndex++, 12);
 
                     // 4. Empty data/amqp-value
                     SwimDriver.AMQPProperties props4 = new SwimDriver.AMQPProperties();
@@ -156,7 +156,7 @@ public class SwimToAmhsTests {
                     props4.setRecipients(recipient);
                     props4.setAmqpPriority((short) 4);
                     publishDual(inputs, new byte[0], props4);
-                    logProgress(testCaseId, msgIndex++, 10);
+                    logProgress(testCaseId, msgIndex++, 12);
 
                     // 5. Empty/Invalid recipients
                     SwimDriver.AMQPProperties props5 = new SwimDriver.AMQPProperties();
@@ -166,12 +166,20 @@ public class SwimToAmhsTests {
                     else props5.setRecipients("LONGADDRESSXXXXX"); // >8 chars for binary
                     props5.setAmqpPriority((short) 4);
                     publishDual(inputs, payload, props5);
-                    logProgress(testCaseId, msgIndex++, 10);
+                    logProgress(testCaseId, msgIndex++, 12);
+
+                    // 6. Empty content-type
+                    SwimDriver.AMQPProperties props6 = new SwimDriver.AMQPProperties();
+                    props6.setBodyType(bt);
+                    props6.setRecipients(recipient);
+                    props6.setAmqpPriority((short) 4);
+                    publishDual(inputs, payload, props6);
+                    logProgress(testCaseId, msgIndex++, 12);
                 }
                 
-                Logger.logVerification(testCaseId, "10 Rejection scenarios injected.");
+                Logger.logVerification(testCaseId, "12 Rejection scenarios injected.");
                 logManualAction(testCaseId, "VERIFICATION STEPS:\n" +
-                    "1. Confirm that NO messages are delivered to the AMHS Tool for these 10 injections.\n" +
+                    "1. Confirm that NO messages are delivered to the AMHS Tool for these 12 injections.\n" +
                     "2. Check Gateway Logs/Control Position for rejection logs.");
                 return true;
             } catch (Exception e) { return false; }
