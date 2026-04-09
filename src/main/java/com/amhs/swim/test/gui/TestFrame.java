@@ -36,6 +36,13 @@ public class TestFrame extends JFrame {
         setSize(800, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
+        
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent e) {
+                TestConfig.getInstance().saveConfig();
+            }
+        });
     }
 
     private void initComponents() {
@@ -116,9 +123,14 @@ public class TestFrame extends JFrame {
         // Deep Trace Toggle
         JPanel tracePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JCheckBox traceCheck = new JCheckBox("Enable Deep AMQP Trace (ICAO Compliance)");
-        traceCheck.setSelected(false);
+        boolean traceEnabled = Boolean.parseBoolean(TestConfig.getInstance().getProperty("gateway.trace_enabled", "false"));
+        traceCheck.setSelected(traceEnabled);
+        swimToAmhsTests.getSwimDriver().setTraceEnabled(traceEnabled);
+        
         traceCheck.addActionListener(e -> {
-            swimToAmhsTests.getSwimDriver().setTraceEnabled(traceCheck.isSelected());
+            boolean selected = traceCheck.isSelected();
+            swimToAmhsTests.getSwimDriver().setTraceEnabled(selected);
+            TestConfig.getInstance().setProperty("gateway.trace_enabled", String.valueOf(selected));
         });
         tracePanel.add(traceCheck);
         configPanel.add(tracePanel);
@@ -143,15 +155,15 @@ public class TestFrame extends JFrame {
             config.setProperty("gateway.default_topic", topicField.getText());
             config.setProperty("gateway.test_recipient", recipientField.getText());
             config.setProperty("amqp_broker_profile", (String) profileCombo.getSelectedItem());
+            config.setProperty("gateway.trace_enabled", String.valueOf(traceCheck.isSelected()));
             config.saveConfig();
             
             swimToAmhsTests = new SwimToAmhsTests();
             log("Configuration saved. Test cases re-initialized.");
         });
         configPanel.add(saveBtn);
-
         tabbedPane.addTab("Settings", new JScrollPane(configPanel));
-        
+
         // --- Real-time Execution Log Display ---
         logArea = new JTextArea();
         logArea.setEditable(false);
@@ -159,11 +171,38 @@ public class TestFrame extends JFrame {
         JScrollPane logScroll = new JScrollPane(logArea);
         logScroll.setBorder(BorderFactory.createTitledBorder("Execution Log"));
         logScroll.setPreferredSize(new Dimension(800, 200));
+
+        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, tabbedPane, logScroll);
+        splitPane.setDividerLocation(350);
+        splitPane.setResizeWeight(0.5);
         
-        mainPanel.add(tabbedPane, BorderLayout.CENTER);
-        mainPanel.add(logScroll, BorderLayout.SOUTH);
+        mainPanel.add(splitPane, BorderLayout.CENTER);
         
         add(mainPanel);
+        
+        // Auto-save setup for fields
+        setupAutoSave(hostField, "swim.broker.host");
+        setupAutoSave(portField, "swim.broker.port");
+        setupAutoSave(userField, "swim.broker.user");
+        setupAutoSave(vpnField, "swim.broker.vpn");
+        setupAutoSave(topicField, "gateway.default_topic");
+        setupAutoSave(recipientField, "gateway.test_recipient");
+        profileCombo.addActionListener(e -> TestConfig.getInstance().setProperty("amqp_broker_profile", (String) profileCombo.getSelectedItem()));
+        passField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            public void changedUpdate(javax.swing.event.DocumentEvent e) { update(); }
+            public void removeUpdate(javax.swing.event.DocumentEvent e) { update(); }
+            public void insertUpdate(javax.swing.event.DocumentEvent e) { update(); }
+            private void update() { TestConfig.getInstance().setProperty("swim.broker.password", new String(passField.getPassword())); }
+        });
+    }
+
+    private void setupAutoSave(JTextField field, String key) {
+        field.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            public void changedUpdate(javax.swing.event.DocumentEvent e) { update(); }
+            public void removeUpdate(javax.swing.event.DocumentEvent e) { update(); }
+            public void insertUpdate(javax.swing.event.DocumentEvent e) { update(); }
+            private void update() { TestConfig.getInstance().setProperty(key, field.getText()); }
+        });
     }
 
     private void addTestButton(JPanel panel, String label, BaseTestCase testCase) {
@@ -193,6 +232,7 @@ public class TestFrame extends JFrame {
         // Execute the test in a separate thread to keep the GUI responsive
         new Thread(() -> {
             try {
+                Logger.logCaseStart(testCase.getTestCaseId());
                 log("Starting injection: " + testCase.getTestCaseId());
                 boolean result;
                 if (userInputs != null) {
@@ -201,6 +241,7 @@ public class TestFrame extends JFrame {
                     result = testCase.execute();
                 }
                 log("Injection Status: " + (result ? "SUCCESSFUL" : "FAILED"));
+                Logger.logCaseEnd(testCase.getTestCaseId());
             } catch (Exception ex) {
                 log("Exception during injection: " + ex.getMessage());
                 ex.printStackTrace();

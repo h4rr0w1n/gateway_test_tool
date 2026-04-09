@@ -45,9 +45,21 @@ public class Logger {
      * @param details The summary details to be displayed.
      */
     public static void logVerification(String caseId, String details) {
-        log("SUCCESS", "\n" + "=".repeat(60) + "\n" + 
+        log("SUCCESS", "\n" + "-".repeat(60) + "\n" + 
             " [" + caseId + "] VERIFICATION SUMMARY\n" + 
             " ".repeat(2) + details.replace("\n", "\n  ") + "\n" +
+            "-".repeat(60) + "\n");
+    }
+
+    public static void logCaseStart(String caseId) {
+        log("INFO", "\n" + "=".repeat(60) + "\n" + 
+            "CASE " + caseId + "\n" + 
+            "=".repeat(60));
+    }
+
+    public static void logCaseEnd(String caseId) {
+        log("INFO", "\n" + "=".repeat(60) + "\n" + 
+            "PAYLOAD DELIVERED FOR " + caseId + "\n" + 
             "=".repeat(60) + "\n");
     }
 

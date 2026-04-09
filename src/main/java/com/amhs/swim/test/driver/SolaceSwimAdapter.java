@@ -127,7 +127,16 @@ public class SolaceSwimAdapter implements SwimMessagingAdapter {
         
         if (bodyPartType != null && (bodyPartType.contains("text") || bodyPartType.contains("ia5"))) {
             TextMessage textMsg = JCSMPFactory.onlyInstance().createMessage(TextMessage.class);
-            textMsg.setText(new String(payload));
+            String ct = (String) properties.get("content_type");
+            String charset = "UTF-8";
+            if (ct != null && ct.contains("charset=")) {
+                charset = ct.substring(ct.indexOf("charset=") + 8).trim().split("[; ]")[0].replace("\"", "");
+            }
+            try {
+                textMsg.setText(new String(payload, charset));
+            } catch (java.io.UnsupportedEncodingException e) {
+                textMsg.setText(new String(payload));
+            }
             msg = textMsg;
         } else {
             BytesMessage bytesMsg = JCSMPFactory.onlyInstance().createMessage(BytesMessage.class);
@@ -209,8 +218,8 @@ public class SolaceSwimAdapter implements SwimMessagingAdapter {
     }
     
     private String[] normalizeSolaceConnection(String host, String port) {
-        String finalHost = host;
-        String finalPort = port;
+        String finalHost = host != null ? host.trim() : "";
+        String finalPort = port != null ? port.trim() : "";
         String scheme = "tcp";
 
         if (finalHost.contains("://")) {
