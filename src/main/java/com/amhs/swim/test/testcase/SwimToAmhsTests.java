@@ -54,8 +54,8 @@ public class SwimToAmhsTests {
         @Override
         public List<TestParameter> getRequiredParameters() {
             return List.of(
-                new TestParameter("p1", "Text Payload Content:", "CTSW101 Text Payload", true),
-                new TestParameter("p2", "Binary Payload Content:", "CTSW101 Binary Payload", true)
+                new TestParameter("p1", "Text Payload Content:", TestConfig.getInstance().getCasePayload("CTSW101", "p1"), true),
+                new TestParameter("p2", "Binary Payload Content:", TestConfig.getInstance().getCasePayload("CTSW101", "p2"), true)
             );
         }
 
@@ -72,7 +72,7 @@ public class SwimToAmhsTests {
                 props1.setAmqpPriority((short) 4);
                 props1.setContentType("text/plain; charset=utf-8");
                 props1.setBodyType(SwimDriver.AMQPProperties.BodyType.AMQP_VALUE); // Using amqp-value
-                publishDual(inputs, inputs.getOrDefault("p1", "CTSW101 Text Payload").getBytes(), props1);
+                publishDual(inputs, inputs.getOrDefault("p1", TestConfig.getInstance().getCasePayload("CTSW101", "p1")).getBytes(), props1);
 
                 // 2. Binary Message
                 SwimDriver.AMQPProperties props2 = new SwimDriver.AMQPProperties();
@@ -80,7 +80,7 @@ public class SwimToAmhsTests {
                 props2.setAmqpPriority((short) 4);
                 props2.setContentType("application/octet-stream");
                 props2.setBodyType(SwimDriver.AMQPProperties.BodyType.DATA); // Using data
-                publishDual(inputs, inputs.getOrDefault("p2", "CTSW101 Binary Payload").getBytes(), props2);
+                publishDual(inputs, inputs.getOrDefault("p2", TestConfig.getInstance().getCasePayload("CTSW101", "p2")).getBytes(), props2);
 
                 Logger.logVerification(testCaseId, "Text and Binary messages injected.");
                 logManualAction(testCaseId, "VERIFICATION STEPS:\n" +
@@ -100,7 +100,7 @@ public class SwimToAmhsTests {
         @Override
         public List<TestParameter> getRequiredParameters() {
             return List.of(
-                new TestParameter("payload", "Message Payload:", "CTSW102 Rejection Sample", false)
+                new TestParameter("payload", "Message Payload:", TestConfig.getInstance().getCasePayload("CTSW102", "payload"), false)
             );
         }
 
@@ -110,7 +110,7 @@ public class SwimToAmhsTests {
                 logTransmission(testCaseId, "Injecting 12 malformed scenarios (6 text, 6 binary).");
                 String testTopic = inputs.getOrDefault("topic", TestConfig.getInstance().getProperty("gateway.default_topic", "TEST.TOPIC"));
                 String recipient = inputs.getOrDefault("recipient", TestConfig.getInstance().getProperty("gateway.test_recipient", "VVTSYMYX"));
-                byte[] payload = inputs.getOrDefault("payload", "Content").getBytes();
+                byte[] payload = inputs.getOrDefault("payload", TestConfig.getInstance().getCasePayload("CTSW102", "payload")).getBytes();
 
                 String[] contentTypes = {"text/plain; charset=utf-8", "application/octet-stream"};
                 SwimDriver.AMQPProperties.BodyType[] types = {SwimDriver.AMQPProperties.BodyType.AMQP_VALUE, SwimDriver.AMQPProperties.BodyType.DATA};
@@ -191,14 +191,14 @@ public class SwimToAmhsTests {
         @Override
         public List<TestParameter> getRequiredParameters() {
             return List.of(
-                new TestParameter("p1", "Payload Prefix:", "CTSW103", false)
+                new TestParameter("p1", "Payload Prefix:", TestConfig.getInstance().getCasePayload("CTSW103", "p1"), false)
             );
         }
 
         @Override
         public boolean execute(Map<String, String> inputs) throws Exception {
             try {
-                String prefix = inputs.getOrDefault("p1", "CTSW103");
+                String prefix = inputs.getOrDefault("p1", TestConfig.getInstance().getCasePayload("CTSW103", "p1"));
                 logTransmission(testCaseId, "Injecting 7 messages with varying Service Levels.");
                 String tTopic = inputs.getOrDefault("topic", TestConfig.getInstance().getProperty("gateway.default_topic", "TEST.TOPIC"));
                 String recip = inputs.getOrDefault("recipient", TestConfig.getInstance().getProperty("gateway.test_recipient", "VVTSYMYX"));
@@ -317,8 +317,8 @@ public class SwimToAmhsTests {
         @Override
         public List<TestParameter> getRequiredParameters() {
             return List.of(
-                new TestParameter("p1", "Msg 1 Payload (Empty FT):", "CTSW105 Default FT", false),
-                new TestParameter("p2", "Msg 2 Payload (Specific FT):", "CTSW105 Specific FT", false)
+                new TestParameter("p1", "Msg 1 Payload (Empty FT):", TestConfig.getInstance().getCasePayload("CTSW105", "p1"), false),
+                new TestParameter("p2", "Msg 2 Payload (Specific FT):", TestConfig.getInstance().getCasePayload("CTSW105", "p2"), false)
             );
         }
 
@@ -331,13 +331,13 @@ public class SwimToAmhsTests {
                 // 1. Default (No amhs_ats_ft set)
                 SwimDriver.AMQPProperties props1 = new SwimDriver.AMQPProperties();
                 props1.setRecipients(recip);
-                publishDual(inputs, inputs.getOrDefault("p1", "1").getBytes(), props1);
+                publishDual(inputs, inputs.getOrDefault("p1", TestConfig.getInstance().getCasePayload("CTSW105", "p1")).getBytes(), props1);
 
                 // 2. Explicit (amhs_ats_ft = 250102)
                 SwimDriver.AMQPProperties props2 = new SwimDriver.AMQPProperties();
                 props2.setRecipients(recip);
                 props2.setFilingTime("250102");
-                publishDual(inputs, inputs.getOrDefault("p2", "2").getBytes(), props2);
+                publishDual(inputs, inputs.getOrDefault("p2", TestConfig.getInstance().getCasePayload("CTSW105", "p2")).getBytes(), props2);
                 
                 logManualAction(testCaseId, "VERIFICATION: Msg 1 FT = current DDhhmm. Msg 2 FT = 250102.");
                 return true;

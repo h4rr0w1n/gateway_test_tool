@@ -1,51 +1,22 @@
 ```
-# Dependencies
+# Compiled and build artifacts
+*.class
 target/
 
-# Compiled files
-*.class
-*.jar
-*.war
-*.ear
+# Dependencies
+.m2/
+.gradle/
 
-# IDE files
-.idea/
-*.iml
-*.ipr
-*.iws
-
-# Logs
+# Logs and temp files
 *.log
+*.tmp
+
+# Editors
+.vscode/
+.idea/
 
 # Environment
 .env
 .env.local
-*.env.*
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# Build artifacts
-build/
-dist/
-out/
-
-# Python (if any Python files exist in project)
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.venv/
-venv/
-
-# Coverage reports
-coverage/
-htmlcov/
-.coverage
-
-# Temporary files
-*.tmp
-*.temp
-*.bak
+.env.*
 ```
